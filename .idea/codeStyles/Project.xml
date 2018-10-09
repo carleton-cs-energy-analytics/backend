@@ -1,0 +1,14 @@
+<component name="ProjectCodeStyleConfiguration">
+  <code_scheme name="Project" version="173">
+    <SqlCodeStyleSettings version="1">
+      <option name="ALIAS_CASE" value="4" />
+      <option name="KEYWORD_CASE" value="0" />
+      <option name="TYPE_CASE" value="3" />
+      <option name="IDENTIFIER_CASE" value="1" />
+      <option name="CORTEGE_COMMA_1ST" value="true" />
+      <option name="CORTEGE_CLOSING" value="1" />
+      <option name="EXPR_CASE_THEN_ALIGN" value="true" />
+      <option name="EXPR_CASE_ELSE_ALIGN_THEN" value="true" />
+    </SqlCodeStyleSettings>
+  </code_scheme>
+</component>
