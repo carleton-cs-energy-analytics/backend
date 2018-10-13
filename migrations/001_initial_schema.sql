@@ -24,7 +24,6 @@ CREATE TABLE enumerations (
 );
 
 CREATE TYPE VALUE_TYPE_CATEGORY AS ENUM ('bool', 'int', 'double', 'enum');
--- we're overloading the word "category" a little here.
 
 CREATE TABLE value_type (
   value_type_id  SERIAL PRIMARY KEY,
@@ -39,9 +38,10 @@ CREATE TABLE value_units (
 );
 
 CREATE TABLE points (
-  point_name     VARCHAR(255) PRIMARY KEY,
-  device_id      INT NOT NULL REFERENCES devices,
-  value_type_id  INT NOT NULL REFERENCES value_type,
+  point_id       SERIAL PRIMARY KEY,
+  point_name     VARCHAR(255) NOT NULL UNIQUE,
+  device_id      INT          NOT NULL REFERENCES devices,
+  value_type_id  INT          NOT NULL REFERENCES value_type,
   value_units_id INT REFERENCES value_units,
   description    TEXT
 );
@@ -74,14 +74,14 @@ CREATE TABLE devices_tags (
 );
 
 CREATE TABLE points_tags (
-  point_name VARCHAR(255) NOT NULL REFERENCES points,
-  tag_id     INT          NOT NULL REFERENCES tags
+  point_id INT NOT NULL REFERENCES points,
+  tag_id   INT NOT NULL REFERENCES tags
 );
 
 CREATE TABLE values (
-  value_id   SERIAL PRIMARY KEY,
-  point_name VARCHAR(255) NOT NULL REFERENCES points,
-  timestamp  INT          NOT NULL,
-  int        BIGINT,
-  double     DOUBLE PRECISION
+  value_id  SERIAL PRIMARY KEY,
+  point_id  INT NOT NULL,
+  timestamp INT NOT NULL,
+  int       BIGINT,
+  double    DOUBLE PRECISION
 );
