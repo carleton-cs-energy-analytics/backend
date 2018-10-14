@@ -57,6 +57,3 @@ class Rooms:
                 ) AS a;
                 """, id)
         return unwrap(cursor.fetchone())
-
-
-class Tags:
