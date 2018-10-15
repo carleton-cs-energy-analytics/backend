@@ -18,17 +18,17 @@ CREATE TABLE devices (
   description TEXT
 );
 
-CREATE TABLE enumerations (
-  enumeration_id SERIAL PRIMARY KEY,
-  cases          JSONB
+CREATE TABLE enums (
+  enum_id SERIAL PRIMARY KEY,
+  cases   JSONB
 );
 
-CREATE TYPE VALUE_TYPE_CATEGORY AS ENUM ('bool', 'int', 'double', 'enum');
+CREATE TYPE VALUE_TYPE_STORAGE_KIND AS ENUM ('bool', 'int', 'double', 'enum');
 
 CREATE TABLE value_type (
-  value_type_id  SERIAL PRIMARY KEY,
-  category       VALUE_TYPE_CATEGORY NOT NULL,
-  enumeration_id INT REFERENCES enumerations
+  value_type_id SERIAL PRIMARY KEY,
+  storage_kind  VALUE_TYPE_STORAGE_KIND NOT NULL,
+  enum_id      INT REFERENCES enums
 );
 
 CREATE TABLE value_units (
