@@ -32,3 +32,18 @@ def get_all_rooms():
 @api.route('/room/<id>')
 def get_room(id):
     return Rooms.get(id)
+
+
+@api.route('/tags')
+def get_all_tags():
+    try:
+        return Tags.all()
+
+    except Exception as e:
+        # TODO: do something with exceptions
+        raise e
+
+
+@api.route('/tag/<id>')
+def get_tag_by_id(id):
+    return Tags.get_id(id)

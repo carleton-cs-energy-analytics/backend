@@ -57,3 +57,27 @@ class Rooms:
                 ) AS a;
                 """, id)
         return unwrap(cursor.fetchone())
+
+
+class Tags:
+    @staticmethod
+    def all():
+        cursor = CONN.cursor()
+        cursor.execute("""
+                                SELECT array_to_json(array_agg(row_to_json(a)))
+                                FROM (
+                                    SELECT * FROM tags
+                                    ) AS a;
+                                """)
+        return unwrap(cursor.fetchall())
+
+    @staticmethod
+    def get_id(id):
+        cursor = CONN.cursor()
+        cursor.execute("""
+                    SELECT array_to_json(array_agg(row_to_json(a)))
+                    FROM (
+                        SELECT * FROM tags WHERE tag_id = %s LIMIT 1      
+                    ) AS a;
+                    """, id)
+        return unwrap(cursor.fetchone())
