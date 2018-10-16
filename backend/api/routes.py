@@ -70,3 +70,19 @@ def get_all_points():
 
     except Exception as e:
         raise e
+
+
+@api.route('/point/<id>')
+def get_point_by_id(id):
+    return Points.get_id(id)
+
+
+@api.route('/categories')
+def get_all_categories():
+    return Categories.all()
+
+
+@api.route('/categories/<id>')
+def get_tags_by_category_id(id):
+    return Categories.get_id(id)
+

@@ -73,3 +73,17 @@ class Points:
     @staticmethod
     def all():
         return query_json_array("SELECT * FROM points")
+
+    @staticmethod
+    def get_id(id):
+        return query_json_item("SELECT * FROM points WHERE point_id = %s", id)
+
+
+class Categories:
+    @staticmethod
+    def all():
+        return query_json_array("SELECT * FROM categories")
+
+    @staticmethod
+    def get_id(id):
+        return query_json_array("SELECT * FROM tags WHERE category_id = %s", id)
