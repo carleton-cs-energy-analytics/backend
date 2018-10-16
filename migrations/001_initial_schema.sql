@@ -28,7 +28,7 @@ CREATE TYPE VALUE_TYPE_STORAGE_KIND AS ENUM ('bool', 'int', 'double', 'enum');
 CREATE TABLE value_type (
   value_type_id SERIAL PRIMARY KEY,
   storage_kind  VALUE_TYPE_STORAGE_KIND NOT NULL,
-  enum_id      INT REFERENCES enums
+  enum_id       INT REFERENCES enums
 );
 
 CREATE TABLE value_units (
