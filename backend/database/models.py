@@ -57,3 +57,19 @@ class Tags:
     @staticmethod
     def get_id(id):
         return query_json_item("SELECT * FROM tags WHERE tag_id = %s", id)
+
+
+class Devices:
+    @staticmethod
+    def all():
+        return query_json_array("SELECT * FROM devices")
+
+    @staticmethod
+    def get_id(id):
+        return query_json_item("SELECT * FROM devices WHERE device_id = %s", id)
+
+
+class Points:
+    @staticmethod
+    def all():
+        return query_json_array("SELECT * FROM points")

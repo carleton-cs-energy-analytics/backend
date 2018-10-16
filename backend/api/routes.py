@@ -47,3 +47,26 @@ def get_all_tags():
 @api.route('/tag/<id>')
 def get_tag_by_id(id):
     return Tags.get_id(id)
+
+
+@api.route('/devices')
+def get_all_devices():
+    try:
+        return Devices.all()
+
+    except Exception as e:
+        raise e
+
+
+@api.route('/device/<id>')
+def get_device_by_id(id):
+    return Devices.get_id(id)
+
+
+@api.route('/points')
+def get_all_points():
+    try:
+        return Points.all()
+
+    except Exception as e:
+        raise e
