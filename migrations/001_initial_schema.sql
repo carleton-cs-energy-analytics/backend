@@ -25,16 +25,16 @@ CREATE TABLE enums (
 
 CREATE TYPE VALUE_TYPE_STORAGE_KIND AS ENUM ('bool', 'int', 'double', 'enum');
 
-CREATE TABLE value_type (
+CREATE TABLE value_types (
   value_type_id SERIAL PRIMARY KEY,
   storage_kind  VALUE_TYPE_STORAGE_KIND NOT NULL,
   enum_id       INT REFERENCES enums
 );
 
 CREATE TABLE value_units (
-  value_units_id SERIAL PRIMARY KEY,
+  value_unit_id SERIAL PRIMARY KEY,
   measurement    VARCHAR(255) NOT NULL,
-  units          VARCHAR(255) NOT NULL
+  unit          VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE points (
