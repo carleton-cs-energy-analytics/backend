@@ -36,7 +36,3 @@ class Search:
                 sql_string += "rooms.floor " + matches[0] + " " + matches[1]
 
         return sql_string
-
-
-
-
