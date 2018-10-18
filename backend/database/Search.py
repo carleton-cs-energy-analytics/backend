@@ -15,11 +15,28 @@ class Search:
         """
 
         # @ -> buildings, # -> tags, $ -> rooms, % -> devices, * -> points
-        regex = re.compile("")
+        regex = re.compile("([@$%*]\\d+|#\\w+|and|or|not|:(\\w+) (([<>=]|!=|<=|>=) (\\d+)|(\"[^\"]+\"))|\\(|\\))")
         # TODO: think harder about the name token
         for token in regex.findall(source_string):
+            token = token[0]
+            print(type(token))
+            print(token)
             if re.compile("@\\d+").match(token):
-                # add to the sql string
+                sql_string += "buildings.building_id = " + token[1:]
+            elif re.compile("#\\w+").match(token):
+                sql_string += "tags.name = " + token[1:]
+            elif re.compile("\\$\\d+").match(token):
+                sql_string += "rooms.room_id = " + token[1:]
+            elif re.compile("%\\d+").match(token):
+                sql_string += "devices.device_id = " + token[1:]
+            elif re.compile("\\*\\d+").match(token):
+                sql_string += "points.point_id = " + token[1:]
+            elif re.compile(":floor ([<>=]|!=|<=|>=) (\\d+)").match(token):
+                matches = re.compile(":floor ([<>=]|!=|<=|>=) (\\d+)").match(token).groups()
+                sql_string += "rooms.floor " + matches[0] + " " + matches[1]
+
+        return sql_string
+
 
 
 
