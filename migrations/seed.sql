@@ -19,35 +19,31 @@ INSERT INTO devices (device_id, room_id, description)
 VALUES (1, 1, 'Fishbowl thermostat')
      , (2, 1, 'Fishbowl vav')
      , (3, 4, 'Thermostat in Evans 107')
+     , (4, 3, '102 Lab thermostat')
 ;
 
-INSERT INTO value_units (measurement, units)
+INSERT INTO value_units (measurement, unit)
 VALUES ('temperature', 'fahrenheit')
      , ('temperature', 'celsius')
      , ('airflow', 'feet^3 minute^-1')
 ;
 
-INSERT INTO value_type (storage_kind)
+INSERT INTO value_types (storage_kind)
 VALUES ('bool')
      , ('int')
      , ('double')
 ;
 
-INSERT INTO value_units (measurement, units)
+INSERT INTO value_units (measurement, unit)
 VALUES ('temperature', 'fahrenheit')
      , ('power', 'joules')
      , ('airflow', 'cubic feet per minute')
 ;
 
-INSERT INTO points (point_id
-                   , point_name
-                   , device_id
-                   , value_type_id
-                   , value_units_id
-                   , description
-                   )
+INSERT INTO points (point_id, point_name, device_id, value_type_id, value_units_id, description)
 VALUES (1, 'CMC.328.RT', 1, 2, 1, 'Room Temp in CMC 328')
      , (2, 'CMC.328.SP', 1, 2, 1, 'Thermostat Set Point in CMC 328')
+     , (5, 'CMC.102.SP', 4, 2, 1, 'Thermostat Set Point in CMC 102')
      , (3, 'EV.RM107.RT', 3, 2, 1, 'Room Temp in Evans 107')
      , (4, 'EV.RM107.SP', 3, 2, 1, 'Thermostat Set Point in Evans 107')
 ;

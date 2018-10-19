@@ -1,6 +1,6 @@
 <component name="ProjectCodeStyleConfiguration">
   <code_scheme name="Project" version="173">
-    <option name="RIGHT_MARGIN" value="80" />
+    <option name="RIGHT_MARGIN" value="100" />
     <SqlCodeStyleSettings version="1">
       <option name="ALIAS_CASE" value="4" />
       <option name="KEYWORD_CASE" value="0" />

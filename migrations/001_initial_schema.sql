@@ -41,7 +41,7 @@ CREATE TABLE points (
   point_id       SERIAL PRIMARY KEY,
   point_name     VARCHAR(255) NOT NULL UNIQUE,
   device_id      INT          NOT NULL REFERENCES devices,
-  value_type_id  INT          NOT NULL REFERENCES value_type,
+  value_type_id  INT          NOT NULL REFERENCES value_types,
   value_units_id INT REFERENCES value_units,
   description    TEXT
 );
