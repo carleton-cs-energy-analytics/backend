@@ -2,7 +2,7 @@ import unittest
 from backend.database.Search import Search
 
 string_beginning = """
-        SELECT *
+        SELECT DISTINCT points.point_id
         FROM points
             LEFT JOIN devices ON points.device_id = devices.device_id
             LEFT JOIN rooms ON devices.room_id = rooms.room_id
@@ -75,9 +75,17 @@ class SearchTests(unittest.TestCase):
         search = Search("@1 and :floor > 2")
         self.assertEqual(search.get_ids(), [2,1])
 
-    def test_search_building_and_room(self):
-        pass
+    def test_search_building_or_room(self):
+        self.assertEqual(set(Search("@2 or %4").get_ids()), {3, 4, 5})
 
+    def test_search_tag(self):
+        self.assertEqual(set(Search("#11").get_ids()), {1, 2, 5})
+
+    def test_search_building_and_tag(self):
+        self.assertEqual(set(Search("@1 and #2").get_ids()), {2, 5})
+
+    def test_search_tag_not_building(self):
+        self.assertEqual(set(Search("#2 and not @2").get_ids()), {2, 5})
 
 if __name__ == '__main__':
     unittest.main()

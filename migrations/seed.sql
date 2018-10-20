@@ -79,6 +79,7 @@ VALUES (1, 3)
      , (2, 8)
      , (3, 8)
      , (4, 8)
+     , (5, 2)
 ;
 
 INSERT INTO devices_tags (device_id, tag_id)
