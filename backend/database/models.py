@@ -48,17 +48,52 @@ def query_single_column(query, vars=None):
 class Buildings:
     @staticmethod
     def all():
-        return query_json_array("SELECT * FROM buildings")
+        return query_json_array("""
+        SELECT building_id, name,
+            (SELECT
+                ARRAY(SELECT name
+                    FROM tags
+                        INNER JOIN buildings_tags
+                            ON tags.tag_id = buildings_tags.tag_id
+                    WHERE buildings_tags.building_id = buildings.building_id)) AS tags
+        FROM buildings""")
 
     @staticmethod
     def get(id):
-        return query_json_item("SELECT * FROM buildings WHERE building_id = %s LIMIT 1", id)
+        return query_json_item("""
+        SELECT building_id, name,
+            (SELECT
+                ARRAY(SELECT name
+                    FROM tags
+                        INNER JOIN buildings_tags ON tags.tag_id = buildings_tags.tag_id
+                    WHERE buildings_tags.building_id = buildings.building_id)) AS tags
+        FROM buildings WHERE buildings.building_id = %s""", id)
 
 
 class Rooms:
     @staticmethod
     def all():
-        return query_json_array("SELECT * FROM rooms")
+        return query_json_array("""
+        SELECT room_id,
+           rooms.name,
+           rooms.building_id,
+           buildings.name,
+           floor,
+           rooms.description,
+           (SELECT 
+                ARRAY(SELECT name
+                     FROM tags
+                            INNER JOIN rooms_tags ON tags.tag_id = rooms_tags.tag_id
+                     WHERE rooms_tags.room_id = rooms.room_id
+                         UNION
+                     SELECT name
+                     FROM tags
+                            INNER JOIN buildings_tags ON tags.tag_id = buildings_tags.tag_id
+                     WHERE rooms.building_id = buildings_tags.building_id
+                       )) AS tags
+        FROM rooms
+            LEFT JOIN buildings ON rooms.building_id = buildings.building_id
+        """)
 
     @staticmethod
     def get(id):
