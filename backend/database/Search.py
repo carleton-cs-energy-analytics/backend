@@ -1,16 +1,16 @@
 import re
-
+from backend.database.models import query_single_column
 
 class Search:
 
     def __init__(self, source_string):
-        self.source_string = source_string
+        self.sql_string = Search.parse(source_string)
         self.results = None
 
     @staticmethod
     def parse(source_string):
         sql_string = """
-        SELECT *
+        SELECT DISTINCT points.point_id
         FROM points
             LEFT JOIN devices ON points.device_id = devices.device_id
             LEFT JOIN rooms ON devices.room_id = rooms.room_id
@@ -28,8 +28,6 @@ class Search:
         # TODO: think harder about the name token
         for token in regex.findall(source_string):
             token = token[0]
-            print(type(token))
-            print(token)
             if re.match("@\\d+", token):
                 sql_string += " buildings.building_id = " + token[1:]
             elif re.match("#\\d+", token):
@@ -68,3 +66,7 @@ class Search:
                 sql_string += ")"
 
         return sql_string + ";"
+
+    def get_ids(self):
+        return query_single_column(self.sql_string)
+

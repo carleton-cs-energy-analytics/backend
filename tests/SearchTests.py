@@ -73,7 +73,10 @@ class SearchTests(unittest.TestCase):
 
     def test_search(self):
         search = Search("@1 and :floor > 2")
-        self.assertEqual(search.get_ids(), )
+        self.assertEqual(search.get_ids(), [2,1])
+
+    def test_search_building_and_room(self):
+        pass
 
 
 if __name__ == '__main__':

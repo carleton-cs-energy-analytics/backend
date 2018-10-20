@@ -11,9 +11,19 @@ def unwrap(result):
     return jsonify(result[0][0])
 
 
+def unwrapTuple(result):
+    result_list = []
+    for tuple in result:
+        result_list.append(tuple[0])
+
+    return result_list
+
+
 def query_json_array(query, vars=None):
     with CONN.cursor() as curs:
-        curs.execute("SELECT array_to_json(array_agg(row_to_json(a)))::TEXT FROM (" + query + ") AS a;", vars)
+        curs.execute(
+            "SELECT array_to_json(array_agg(row_to_json(a)))::TEXT FROM (" + query + ") AS a;",
+            vars)
         result = curs.fetchall()
         assert len(result) == 1
         assert len(result[0]) == 1
@@ -27,6 +37,12 @@ def query_json_item(query, vars=None):
         assert len(result) == 1
         assert len(result[0]) == 1
         return result[0][0]
+
+
+def query_single_column(query, vars=None):
+    with CONN.cursor() as curs:
+        curs.execute(query, vars)
+        return unwrapTuple(curs.fetchall())
 
 
 class Buildings:
