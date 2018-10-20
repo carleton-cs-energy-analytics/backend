@@ -2,8 +2,6 @@ import os
 import psycopg2
 from flask import jsonify
 
-print("about to connect to database")
-
 CONN = psycopg2.connect(dbname=os.environ.get('DATABASE_NAME') or 'energy-dev',
                         user=os.environ.get('DATABASE_USER') or '',
                         password=os.environ.get('DATABASE_PASSWORD') or '')
@@ -13,7 +11,7 @@ def unwrap(result):
     return jsonify(result[0][0])
 
 
-def unwrapTuple(result):
+def unwrap_tuple(result):
     result_list = []
     for tuple in result:
         result_list.append(tuple[0])
@@ -44,7 +42,7 @@ def query_json_item(query, vars=None):
 def query_single_column(query, vars=None):
     with CONN.cursor() as curs:
         curs.execute(query, vars)
-        return unwrapTuple(curs.fetchall())
+        return unwrap_tuple(curs.fetchall())
 
 
 class Buildings:
