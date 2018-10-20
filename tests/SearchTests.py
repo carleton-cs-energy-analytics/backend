@@ -7,6 +7,7 @@ string_beginning = """
             LEFT JOIN devices ON points.device_id = devices.device_id
             LEFT JOIN rooms ON devices.room_id = rooms.room_id
             LEFT JOIN buildings ON rooms.building_id = buildings.building_id
+            LEFT JOIN value_units ON points.value_unit_id = value_units.value_unit_id
             LEFT JOIN points_tags ON points.point_id = points_tags.point_id
             LEFT JOIN devices_tags ON devices.device_id = devices_tags.device_id
             LEFT JOIN rooms_tags ON rooms.room_id = rooms_tags.room_id
@@ -20,6 +21,11 @@ class SearchTests(unittest.TestCase):
     def test_simple_building(self):
         self.assertEqual(Search.parse("@12"),
                          string_beginning + " buildings.building_id = 12;")
+
+    def test_simple_tag(self):
+        self.assertEqual(Search.parse("#1"),
+                         string_beginning + " (points_tags.tag_id = 1 OR devices_tags.tag_id = 1" +
+                         " OR rooms_tags.tag_id = 1 OR buildings_tags.tag_id = 1);")
 
     def test_simple_room(self):
         self.assertEqual(Search.parse("$12"),
@@ -45,7 +51,21 @@ class SearchTests(unittest.TestCase):
         self.assertEqual(Search.parse("not"),
                          string_beginning + " NOT;")
 
-    # def test_simple_floor(self):
+    def test_simple_floor(self):
+        self.assertEqual(Search.parse(":floor = 3"),
+                         string_beginning + " rooms.floor = 3;")
+
+    def test_simple_type(self):
+        self.assertEqual(Search.parse(":type 4"),
+                         string_beginning + " points.value_type_id = 4;")
+
+    def test_simple_unit(self):
+        self.assertEqual(Search.parse(":unit 5"),
+                         string_beginning + " value_units.value_unit_id = 5;")
+
+    def test_simple_measurement(self):
+        self.assertEqual(Search.parse(":measurement 'temperature'"),
+                         string_beginning + " value_units.measurement = 'temperature';")
 
     def test_building_room(self):
         self.assertEquals(Search.parse("@3 and $7"),
@@ -71,9 +91,13 @@ class SearchTests(unittest.TestCase):
         self.assertEquals(Search.parse("@3 and :floor > 2"),
                           string_beginning + " buildings.building_id = 3 AND rooms.floor > 2;")
 
-    def test_search(self):
+    def test_search_building(self):
+        search = Search("@2")
+        self.assertEqual(set(search.get_ids()), {3, 4})
+
+    def test_search_building_floor(self):
         search = Search("@1 and :floor > 2")
-        self.assertEqual(search.get_ids(), [2,1])
+        self.assertEqual(search.get_ids(), [2, 1])
 
     def test_search_building_or_room(self):
         self.assertEqual(set(Search("@2 or %4").get_ids()), {3, 4, 5})

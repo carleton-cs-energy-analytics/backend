@@ -15,6 +15,7 @@ class Search:
             LEFT JOIN devices ON points.device_id = devices.device_id
             LEFT JOIN rooms ON devices.room_id = rooms.room_id
             LEFT JOIN buildings ON rooms.building_id = buildings.building_id
+            LEFT JOIN value_units ON points.value_unit_id = value_units.value_unit_id
             LEFT JOIN points_tags ON points.point_id = points_tags.point_id
             LEFT JOIN devices_tags ON devices.device_id = devices_tags.device_id
             LEFT JOIN rooms_tags ON rooms.room_id = rooms_tags.room_id
@@ -24,7 +25,7 @@ class Search:
 
         # @ -> buildings, # -> tags, $ -> rooms, % -> devices, * -> points
         regex = re.compile(
-            "([@#$%*]\\d+|and|or|not|:(\\w+) (([<>=]|!=|<=|>=) (\\d+)|(\'\\w+\'))|\\(|\\))")
+            "([@#$%*]\\d+|and|or|not|:(\\w+) (([<>=]|!=|<=|>=)? ?(\\d+)|(\'\\w+\'))|\\(|\\))")
         # TODO: think harder about the name token
         for token in regex.findall(source_string):
             token = token[0]
@@ -46,7 +47,7 @@ class Search:
                 sql_string += " rooms.floor " + matches[0] + " " + matches[1]
             elif re.match(":type (\\d+)", token):
                 matches = re.match(":type (\\d+)", token).groups()
-                sql_string += " value_types.value_type_id = " + matches[0]
+                sql_string += " points.value_type_id = " + matches[0]
             elif re.match(":unit (\\d+)", token):
                 matches = re.match(":unit (\\d+)", token).groups()
                 sql_string += " value_units.value_unit_id = " + matches[0]
