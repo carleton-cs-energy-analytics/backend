@@ -82,7 +82,7 @@ def get_all_categories():
     return Categories.all()
 
 
-@api.route('/categories/<id>')
+@api.route('/category/<id>')
 def get_tags_by_category_id(id):
     return Categories.get_id(id)
 
