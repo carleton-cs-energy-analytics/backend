@@ -45,7 +45,7 @@ VALUES (1, 'CMC.328.RT', 1, 2, 1, 'Room Temp in CMC 328')
      , (2, 'CMC.328.SP', 1, 2, 1, 'Thermostat Set Point in CMC 328')
      , (5, 'CMC.102.SP', 4, 2, 1, 'Thermostat Set Point in CMC 102')
      , (3, 'EV.RM107.RT', 3, 2, 1, 'Room Temp in Evans 107')
-     , (4, 'EV.RM107.SP', 3, 2, 1, 'Thermostat Set Point in Evans 107')
+     , (4, 'EV.RM107.SP', 3, 3, 1, 'Thermostat Set Point in Evans 107')
 ;
 
 INSERT INTO categories (category_id, name)
@@ -98,4 +98,10 @@ VALUES (1, 5)
      , (1, 10)
      , (1, 11)
      , (2, 4)
+;
+
+INSERT INTO values (point_id, timestamp, int, double)
+VALUES (1, 2, 6, NULL)
+     , (4, 5, NULL, 9.8)
+     , (3, 13, 10, NULL)
 ;

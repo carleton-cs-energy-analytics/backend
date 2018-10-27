@@ -45,6 +45,23 @@ def query_single_column(query, vars=None):
         return unwrap_tuple(curs.fetchall())
 
 
+def query_single_cell(query, vars=None):
+    with CONN.cursor() as curs:
+        curs.execute(query, vars)
+        result = curs.fetchall()
+        print(type(result))
+        print(result)
+        assert len(result) == 1
+        assert len(result[0]) == 1
+        return result[0][0]
+
+
+def insert(query, vars=None):
+    with CONN.cursor() as curs:
+        curs.execute(query, vars)
+        CONN.commit()
+
+
 class Buildings:
     sql_query = """
         SELECT building_id, name AS building_name,
@@ -108,6 +125,7 @@ class Tags:
         FROM tags
             LEFT JOIN categories ON tags.category_id = categories.category_id
         """
+
     @staticmethod
     def all():
         return query_json_array(Tags.sql_query)
@@ -146,6 +164,7 @@ class Devices:
             LEFT JOIN rooms ON devices.room_id = rooms.room_id
             LEFT JOIN buildings ON rooms.building_id = buildings.building_id
         """
+
     @staticmethod
     def all():
         return query_json_array(Devices.sql_query)
@@ -211,6 +230,16 @@ class Points:
     def get_id(id):
         return query_json_item(Points.sql_query + "WHERE point_id = %s", id)
 
+    @staticmethod
+    def value_is_double(id):
+        storage_kind = query_single_cell("""
+            SELECT storage_kind
+            FROM value_types
+                INNER JOIN points ON value_types.value_type_id = points.value_type_id
+            WHERE point_id = %s
+            ;""", id)
+        return storage_kind == 'double'
+
 
 class Categories:
     sql_query = "SELECT categories.category_id, categories.name AS category_name FROM categories "
@@ -222,3 +251,37 @@ class Categories:
     @staticmethod
     def get_id(id):
         return query_json_item(Categories.sql_query + "WHERE category_id = %s", id)
+
+
+class Values:
+    @staticmethod
+    def add(point_id, timestamp, value):
+        value_is_double = Points.value_is_double(point_id)
+        if value_is_double:
+            insert("""
+            INSERT INTO values (point_id, timestamp, double) VALUES (%s, %s, %s);
+            """, (point_id, timestamp, value))
+        else:
+            insert("""
+            INSERT INTO values (point_id, timestamp, int) VALUES (%s, %s, %s);
+            """, (point_id, timestamp, value))
+
+    @staticmethod
+    def get(point_ids, start_time, end_time):
+        return query_json_array("""
+            SELECT value_id, points.name AS point_name, timestamp, int AS value
+            FROM values
+                   LEFT JOIN points ON values.point_id = points.point_id
+            WHERE int IS NOT NULL
+              AND values.point_id IN %s
+              AND %s <= timestamp
+              AND timestamp <= %s
+            UNION
+            SELECT value_id, points.name AS point_name, timestamp, double AS value
+            FROM values
+                   LEFT JOIN points ON values.point_id = points.point_id
+            WHERE double IS NOT NULL
+              AND values.point_id IN %s
+              AND %s <= timestamp
+              AND timestamp <= %s
+            """, (point_ids, start_time, end_time, point_ids, start_time, end_time))

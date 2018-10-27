@@ -97,6 +97,7 @@ CREATE TABLE values (
   point_id  INT NOT NULL,
   timestamp INT NOT NULL,
   int       BIGINT,
-  double    DOUBLE PRECISION
+  double    DOUBLE PRECISION,
+  CHECK ((int IS NULL AND double IS NOT NULL) OR (int IS NOT NULL AND double IS NULL))
 )
 ;
