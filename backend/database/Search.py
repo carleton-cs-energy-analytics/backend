@@ -1,27 +1,13 @@
 import re
 from backend.database.models import query_single_column
 
-class Search:
 
-    def __init__(self, source_string):
-        self.sql_string = Search.parse(source_string)
-        self.results = None
+class Search:
+    sql_base = None
 
     @staticmethod
-    def parse(source_string):
-        sql_string = """
-        SELECT DISTINCT points.point_id
-        FROM points
-            LEFT JOIN devices ON points.device_id = devices.device_id
-            LEFT JOIN rooms ON devices.room_id = rooms.room_id
-            LEFT JOIN buildings ON rooms.building_id = buildings.building_id
-            LEFT JOIN value_units ON points.value_unit_id = value_units.value_unit_id
-            LEFT JOIN points_tags ON points.point_id = points_tags.point_id
-            LEFT JOIN devices_tags ON devices.device_id = devices_tags.device_id
-            LEFT JOIN rooms_tags ON rooms.room_id = rooms_tags.room_id
-            LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
-        WHERE
-        """
+    def parse(sql_base, source_string):
+        sql_string = sql_base + " WHERE "
 
         # @ -> buildings, # -> tags, $ -> rooms, % -> devices, * -> points
         regex = re.compile(
@@ -68,6 +54,36 @@ class Search:
 
         return sql_string + ";"
 
-    def get_ids(self):
-        return query_single_column(self.sql_string)
+    @staticmethod
+    def points(source_string):
+        # @ -> buildings, # -> tags, $ -> rooms, % -> devices, * -> points
+        regex = "^([@#$%*]\\d+|and|or|not|:(floor|type|unit|measurement) (([<>=]|!=|<=|>=)? ?(\\d+)|(\'\\w+\'))|\\(|\\))+$"
+
+        if re.match(regex, source_string) is None:
+            raise Exception("Invalid source string for points.")
+
+        return Search.parse("""
+            SELECT DISTINCT points.point_id
+            FROM points
+                LEFT JOIN devices ON points.device_id = devices.device_id
+                LEFT JOIN rooms ON devices.room_id = rooms.room_id
+                LEFT JOIN buildings ON rooms.building_id = buildings.building_id
+                LEFT JOIN value_units ON points.value_unit_id = value_units.value_unit_id
+                LEFT JOIN points_tags ON points.point_id = points_tags.point_id
+                LEFT JOIN devices_tags ON devices.device_id = devices_tags.device_id
+                LEFT JOIN rooms_tags ON rooms.room_id = rooms_tags.room_id
+                LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
+            """, source_string)
+
+    @staticmethod
+    def devices(source_string):
+        # @ -> buildings, # -> tags, $ -> rooms, % -> devices
+        regex = "^([@#$%]\\d+|and|or|not|:(floor) (([<>=]|!=|<=|>=)? ?(\\d+))|\\(|\\))+$"
+
+        if re.match(regex, source_string) is None:
+            raise Exception("Invalid source string for devices.")
+
+        return Search.parse("""
+        """, source_string)
+
 
