@@ -56,9 +56,9 @@ class Search:
     @staticmethod
     def points(source_string):
         # @ -> buildings, # -> tags, $ -> rooms, % -> devices, * -> points
-        regex = "^([@#$%*]\\d+|and|or|not|:(floor|type|unit|measurement) (([<>=]|!=|<=|>=)? ?(\\d+)|(\'\\w+\'))|\\(|\\))+$"
+        regex = re.compile("^([@#$%*]\\d+|and|or|not|:(floor|type|unit|measurement) (([<>=]|!=|<=|>=)? ?(\\d+)|(\'\\w+\'))|\\(|\\)|\\s+)+$")
 
-        if re.match(regex, source_string) is None:
+        if regex.match(source_string) is None:
             raise Exception("Invalid source string for points.")
 
         return Search.parse(source_string)

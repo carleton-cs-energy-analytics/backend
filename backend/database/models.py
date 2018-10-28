@@ -134,10 +134,11 @@ class Rooms:
 
     @staticmethod
     def ids_where(where_clause):
-        # TODO: make sure this is changed to devices
         base_query = """
-                SELECT DISTINCT buildings.building_id 
-                FROM buildings
+                SELECT DISTINCT rooms.room_id
+                FROM rooms
+                    LEFT JOIN buildings ON rooms.building_id = buildings.building_id
+                    LEFT JOIN rooms_tags ON rooms.room_id = rooms_tags.room_id
                     LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
         """
 
@@ -206,6 +207,21 @@ class Devices:
     def where(where_clause):
         return query_json_array(Devices.sql_query + where_clause)
 
+    @staticmethod
+    def ids_where(where_clause):
+        base_query = """
+                    SELECT DISTINCT devices.device_id
+                    FROM devices
+                        LEFT JOIN rooms ON devices.room_id = rooms.room_id
+                        LEFT JOIN buildings ON rooms.building_id = buildings.building_id
+                        LEFT JOIN devices_tags ON devices.device_id = devices_tags.device_id
+                        LEFT JOIN rooms_tags ON rooms.room_id = rooms_tags.room_id
+                        LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
+            """
+
+        return query_single_column(base_query + where_clause)
+
+
 class Points:
     sql_query = """
         SELECT points.point_id, 
@@ -265,6 +281,22 @@ class Points:
     @staticmethod
     def where(where_clause):
         return query_json_array(Points.sql_query + where_clause)
+
+    @staticmethod
+    def ids_where(where_clause):
+        base_query = """
+            SELECT DISTINCT points.point_id
+            FROM points
+                LEFT JOIN devices ON points.device_id = devices.device_id
+                LEFT JOIN rooms ON devices.room_id = rooms.room_id
+                LEFT JOIN buildings ON rooms.building_id = buildings.building_id
+                LEFT JOIN value_units ON points.value_unit_id = value_units.value_unit_id
+                LEFT JOIN points_tags ON points.point_id = points_tags.point_id
+                LEFT JOIN devices_tags ON devices.device_id = devices_tags.device_id
+                LEFT JOIN rooms_tags ON rooms.room_id = rooms_tags.room_id
+                LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
+            """
+        return query_single_column(base_query + where_clause)
 
     @staticmethod
     def value_is_double(id):
