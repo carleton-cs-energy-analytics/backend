@@ -3,11 +3,10 @@ from backend.database.models import query_single_column
 
 
 class Search:
-    sql_base = None
 
     @staticmethod
-    def parse(sql_base, source_string):
-        sql_string = sql_base + " WHERE "
+    def parse(source_string):
+        sql_string = " WHERE "
 
         # @ -> buildings, # -> tags, $ -> rooms, % -> devices, * -> points
         regex = re.compile(
@@ -62,18 +61,7 @@ class Search:
         if re.match(regex, source_string) is None:
             raise Exception("Invalid source string for points.")
 
-        return Search.parse("""
-            SELECT DISTINCT points.point_id
-            FROM points
-                LEFT JOIN devices ON points.device_id = devices.device_id
-                LEFT JOIN rooms ON devices.room_id = rooms.room_id
-                LEFT JOIN buildings ON rooms.building_id = buildings.building_id
-                LEFT JOIN value_units ON points.value_unit_id = value_units.value_unit_id
-                LEFT JOIN points_tags ON points.point_id = points_tags.point_id
-                LEFT JOIN devices_tags ON devices.device_id = devices_tags.device_id
-                LEFT JOIN rooms_tags ON rooms.room_id = rooms_tags.room_id
-                LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
-            """, source_string)
+        return Search.parse(source_string)
 
     @staticmethod
     def devices(source_string):
@@ -83,7 +71,24 @@ class Search:
         if re.match(regex, source_string) is None:
             raise Exception("Invalid source string for devices.")
 
-        return Search.parse("""
-        """, source_string)
+        return Search.parse(source_string)
 
+    @staticmethod
+    def rooms(source_string):
+        # @ -> buildings, # -> tags, $ -> rooms
+        regex = "^([@#$]\\d+|and|or|not|:(floor) (([<>=]|!=|<=|>=)? ?(\\d+))|\\(|\\))+$"
 
+        if re.match(regex, source_string) is None:
+            raise Exception("Invalid source string for rooms.")
+
+        return Search.parse(source_string)
+
+    @staticmethod
+    def buildings(source_string):
+        # @ -> buildings, # -> tags
+        regex = "^([@#]\\d+|and|or|not (([<>=]|!=|<=|>=)? ?(\\d+))|\\(|\\))+$"
+
+        if re.match(regex, source_string) is None:
+            raise Exception("Invalid source string for buildings.")
+
+        return Search.parse(source_string)

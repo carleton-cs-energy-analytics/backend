@@ -60,7 +60,7 @@ def get_all_devices():
 
 @api.route('/device/<id>')
 def get_device_by_id(id):
-    return Devices.get_id(id)
+    return Devices.get(id)
 
 
 @api.route('/points')
@@ -74,7 +74,7 @@ def get_all_points():
 
 @api.route('/point/<id>')
 def get_point_by_id(id):
-    return Points.get_id(id)
+    return Points.get(id)
 
 
 @api.route('/categories')

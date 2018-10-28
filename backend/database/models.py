@@ -82,6 +82,20 @@ class Buildings:
     def get(id):
         return query_json_item(Buildings.sql_query + "WHERE buildings.building_id = %s", id)
 
+    @staticmethod
+    def where(where_clause):
+        return query_json_array(Buildings.sql_query + where_clause)
+
+    @staticmethod
+    def ids_where(where_clause):
+        base_query = """
+            SELECT DISTINCT buildings.building_id 
+            FROM buildings
+                LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
+        """
+
+        return query_single_column(base_query + where_clause)
+
 
 class Rooms:
     sql_query = """
@@ -113,6 +127,21 @@ class Rooms:
     @staticmethod
     def get(id):
         return query_json_item(Rooms.sql_query + "WHERE room_id = %s", id)
+
+    @staticmethod
+    def where(where_clause):
+        return query_json_array(Rooms.sql_query + where_clause)
+
+    @staticmethod
+    def ids_where(where_clause):
+        # TODO: make sure this is changed to devices
+        base_query = """
+                SELECT DISTINCT buildings.building_id 
+                FROM buildings
+                    LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
+        """
+
+        return query_single_column(base_query + where_clause)
 
 
 class Tags:
@@ -170,9 +199,12 @@ class Devices:
         return query_json_array(Devices.sql_query)
 
     @staticmethod
-    def get_id(id):
+    def get(id):
         return query_json_item(Devices.sql_query + "WHERE device_id = %s", id)
 
+    @staticmethod
+    def where(where_clause):
+        return query_json_array(Devices.sql_query + where_clause)
 
 class Points:
     sql_query = """
@@ -227,8 +259,12 @@ class Points:
         return query_json_array(Points.sql_query)
 
     @staticmethod
-    def get_id(id):
+    def get(id):
         return query_json_item(Points.sql_query + "WHERE point_id = %s", id)
+
+    @staticmethod
+    def where(where_clause):
+        return query_json_array(Points.sql_query + where_clause)
 
     @staticmethod
     def value_is_double(id):
