@@ -6,12 +6,7 @@ api = Blueprint('api', __name__)
 
 @api.route('/buildings')
 def get_all_buildings():
-    try:
-        return Buildings.all()
-
-    except Exception as e:
-        # TODO: do something with exceptions
-        raise e
+    return Buildings.all()
 
 
 @api.route('/building/<id>')
@@ -21,12 +16,7 @@ def get_building(id):
 
 @api.route('/rooms')
 def get_all_rooms():
-    try:
-        return Rooms.all()
-
-    except Exception as e:
-        # TODO: do something with exceptions
-        raise e
+    return Rooms.all()
 
 
 @api.route('/room/<id>')
@@ -36,26 +26,17 @@ def get_room(id):
 
 @api.route('/tags')
 def get_all_tags():
-    try:
-        return Tags.all()
-
-    except Exception as e:
-        # TODO: do something with exceptions
-        raise e
+    return Tags.all()
 
 
 @api.route('/tag/<id>')
 def get_tag_by_id(id):
-    return Tags.get_id(id)
+    return Tags.get(id)
 
 
 @api.route('/devices')
 def get_all_devices():
-    try:
-        return Devices.all()
-
-    except Exception as e:
-        raise e
+    return Devices.all()
 
 
 @api.route('/device/<id>')
@@ -65,11 +46,7 @@ def get_device_by_id(id):
 
 @api.route('/points')
 def get_all_points():
-    try:
-        return Points.all()
-
-    except Exception as e:
-        raise e
+    return Points.all()
 
 
 @api.route('/point/<id>')
@@ -85,4 +62,3 @@ def get_all_categories():
 @api.route('/category/<id>')
 def get_tags_by_category_id(id):
     return Categories.get_id(id)
-
