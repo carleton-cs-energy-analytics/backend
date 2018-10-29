@@ -75,24 +75,24 @@ class DeviceSearchTests(unittest.TestCase):
         self.assertEquals(Search.devices("@3 and :floor > 2"),
                           string_beginning + " buildings.building_id = 3 AND rooms.floor > 2;")
 
-    def test_search_building(self):
-        ids = Devices.ids_where(Search.devices("@2"))
-        self.assertEqual(set(ids), {3})
+    # The following tests also test models.py
 
-    def test_search_building_floor(self):
-        ids = Devices.ids_where(Search.devices("@1 and :floor > 2"))
-        self.assertEqual(ids, [2, 1])
+    def test_ids_where_building(self):
+        self.assertEqual(set(Devices.ids_where(Search.devices("@2"))), {3})
 
-    def test_search_building_or_device(self):
+    def test_ids_where_building_floor(self):
+        self.assertEqual(set(Devices.ids_where(Search.devices("@1 and :floor > 2"))), {1, 2})
+
+    def test_ids_where_building_or_device(self):
         self.assertEqual(set(Devices.ids_where(Search.devices("@2 or %4"))), {3, 4})
 
-    def test_search_tag(self):
+    def test_ids_where_tag(self):
         self.assertEqual(set(Devices.ids_where(Search.devices("#11"))), {1, 2, 4})
 
-    def test_search_building_and_tag(self):
+    def test_ids_where_building_and_tag(self):
         self.assertEqual(set(Devices.ids_where(Search.devices("@1 and #2"))), set())
 
-    def test_search_tag_not_building(self):
+    def test_ids_where_tag_not_building(self):
         self.assertEqual(set(Devices.ids_where(Search.devices("#1 and not @2"))), {1})
 
 if __name__ == '__main__':

@@ -58,20 +58,21 @@ class BuildingSearchTests(unittest.TestCase):
         self.assertEquals(Search.buildings("@3 and #2"),
                           string_beginning + " buildings.building_id = 3 AND buildings_tags.tag_id = 2;")
 
-    def test_search_building(self):
-        ids = Buildings.ids_where(Search.buildings("@2"))
-        self.assertEqual(set(ids), {2})
+    # The following tests also test models.py
 
-    def test_search_building_or_device(self):
+    def test_ids_where_building(self):
+        self.assertEqual(set(Buildings.ids_where(Search.buildings("@2"))), {2})
+
+    def test_ids_where_building_or_device(self):
         with self.assertRaises(Exception): Buildings.ids_where(Search.buildings("@2 or %4"))
 
-    def test_search_tag(self):
+    def test_ids_where_tag(self):
         self.assertEqual(set(Buildings.ids_where(Search.buildings("#11"))), {1})
 
-    def test_search_building_and_tag(self):
+    def test_ids_where_building_and_tag(self):
         self.assertEqual(set(Buildings.ids_where(Search.buildings("@1 and #5"))), {1})
 
-    def test_search_tag_not_building(self):
+    def test_ids_where_tag_not_building(self):
         self.assertEqual(set(Buildings.ids_where(Search.buildings("#4 and not @1"))), {2})
 
 if __name__ == '__main__':
