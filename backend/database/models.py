@@ -7,22 +7,32 @@ CONN = psycopg2.connect(dbname=os.environ.get('DATABASE_NAME') or 'energy-dev',
                         password=os.environ.get('DATABASE_PASSWORD') or '')
 
 
-def unwrap(result):
-    return jsonify(result[0][0])
+def unwrap_tuple(tuples):
+    """Maps a list of tuples to a list of the first element of the tuples.
 
+    :param tuples: A list of tuples
+    :return: A list of the first elements of the tuples in the input list
+    """
+    items = []
+    for tuple in tuples:
+        items.append(tuple[0])
 
-def unwrap_tuple(result):
-    result_list = []
-    for tuple in result:
-        result_list.append(tuple[0])
-
-    return result_list
+    return items
 
 
 def query_json_array(query, vars=None):
+    """Returns a JSON-encoded string of the results of the given SQL query.
+
+    The query is wrapped a PostgreSQL `json_agg` function, the database query is issued, and then
+    the results of the query are unwrapped to get the JSON-encoded string itself.
+
+    :param query: The SQL query
+    :param vars: Any values that need to be injected into the SQL query
+    :return: A string containing the JSON-encoded results of the query
+    """
     with CONN.cursor() as curs:
         curs.execute(
-            "SELECT array_to_json(array_agg(row_to_json(a)))::TEXT FROM (" + query + ") AS a;",
+            "SELECT json_agg(a)::TEXT FROM (" + query + ") AS a;",
             vars)
         result = curs.fetchall()
         assert len(result) == 1
@@ -31,6 +41,15 @@ def query_json_array(query, vars=None):
 
 
 def query_json_item(query, vars=None):
+    """Returns a JSON-encoded string of the single result of the given SQL query.
+
+    The query is wrapped a PostgreSQL `row_to_json` function, the database query is issued, and then
+    the results of the query are unwrapped to get the JSON-encoded string itself.
+
+    :param query: The SQL query
+    :param vars: Any values that need to be injected into the SQL query
+    :return: A string containing the JSON-encoded result of the query
+    """
     with CONN.cursor() as curs:
         curs.execute("SELECT row_to_json(a)::TEXT FROM (" + query + ") AS a;", vars)
         result = curs.fetchall()
@@ -40,12 +59,25 @@ def query_json_item(query, vars=None):
 
 
 def query_single_column(query, vars=None):
+    """Takes a SQL query whose result is a single column, and returns the values of that column as a
+    list.
+
+    :param query: The SQL query
+    :param vars: Any values that need to be injected into the SQL query
+    :return: A list of the values in the single column of the result table
+    """
     with CONN.cursor() as curs:
         curs.execute(query, vars)
         return unwrap_tuple(curs.fetchall())
 
 
 def query_single_cell(query, vars=None):
+    """ Takes a SQL query whose result is a single cell, and returns the value in that cell.
+
+    :param query: The SQL query
+    :param vars: Any values that need to be injected into the SQL query
+    :return: The value of the single cell of the result of the query
+    """
     with CONN.cursor() as curs:
         curs.execute(query, vars)
         result = curs.fetchall()
@@ -57,6 +89,11 @@ def query_single_cell(query, vars=None):
 
 
 def insert(query, vars=None):
+    """Runs the given query on the database, then commits the database connection.
+
+    :param query: The SQL query
+    :param vars: Any values that need to be injected into the SQL query
+    """
     with CONN.cursor() as curs:
         curs.execute(query, vars)
         CONN.commit()
@@ -76,18 +113,22 @@ class Buildings:
 
     @staticmethod
     def all():
+        """Returns a JSON-encoded array of all Buildings."""
         return query_json_array(Buildings.sql_query)
 
     @staticmethod
     def get(id):
+        """Returns the JSON-encoded Building whose id is that given."""
         return query_json_item(Buildings.sql_query + "WHERE buildings.building_id = %s", id)
 
     @staticmethod
     def where(where_clause):
+        """Returns a JSON-encoded array of all Buildings which match the given WHERE-clause."""
         return query_json_array(Buildings.sql_query + where_clause)
 
     @staticmethod
     def ids_where(where_clause):
+        """Returns a list of the ids of all Buildings which match the given WHERE-clause."""
         base_query = """
             SELECT DISTINCT buildings.building_id 
             FROM buildings
@@ -122,18 +163,22 @@ class Rooms:
 
     @staticmethod
     def all():
+        """Returns a JSON-encoded array of all Rooms."""
         return query_json_array(Rooms.sql_query)
 
     @staticmethod
     def get(id):
+        """Returns the JSON-encoded Room whose id is that given."""
         return query_json_item(Rooms.sql_query + "WHERE room_id = %s", id)
 
     @staticmethod
     def where(where_clause):
+        """Returns a JSON-encoded array of all Rooms which match the given WHERE-clause."""
         return query_json_array(Rooms.sql_query + where_clause)
 
     @staticmethod
     def ids_where(where_clause):
+        """Returns a list of the ids of all Rooms which match the given WHERE-clause."""
         base_query = """
                 SELECT DISTINCT rooms.room_id
                 FROM rooms
@@ -158,10 +203,12 @@ class Tags:
 
     @staticmethod
     def all():
+        """Returns a JSON-encoded array of all Tags."""
         return query_json_array(Tags.sql_query)
 
     @staticmethod
-    def get_id(id):
+    def get(id):
+        """Returns the JSON-encoded Tag whose id is that given."""
         return query_json_item(Tags.sql_query + "WHERE tag_id = %s", id)
 
 
@@ -197,18 +244,22 @@ class Devices:
 
     @staticmethod
     def all():
+        """Returns a JSON-encoded array of all Devices."""
         return query_json_array(Devices.sql_query)
 
     @staticmethod
     def get(id):
+        """Returns the JSON-encoded Device whose id is that given."""
         return query_json_item(Devices.sql_query + "WHERE device_id = %s", id)
 
     @staticmethod
     def where(where_clause):
+        """Returns a JSON-encoded array of all Devices which match the given WHERE-clause."""
         return query_json_array(Devices.sql_query + where_clause)
 
     @staticmethod
     def ids_where(where_clause):
+        """Returns a list of the ids of all Devices which match the given WHERE-clause."""
         base_query = """
                     SELECT DISTINCT devices.device_id
                     FROM devices
@@ -272,18 +323,22 @@ class Points:
 
     @staticmethod
     def all():
+        """Returns a JSON-encoded array of all Points."""
         return query_json_array(Points.sql_query)
 
     @staticmethod
     def get(id):
+        """Returns the JSON-encoded Point whose id is that given."""
         return query_json_item(Points.sql_query + "WHERE point_id = %s", id)
 
     @staticmethod
     def where(where_clause):
+        """Returns a JSON-encoded array of all Points which match the given WHERE-clause."""
         return query_json_array(Points.sql_query + where_clause)
 
     @staticmethod
     def ids_where(where_clause):
+        """Returns a list of the ids of all Points which match the given WHERE-clause."""
         base_query = """
             SELECT DISTINCT points.point_id
             FROM points
@@ -300,6 +355,7 @@ class Points:
 
     @staticmethod
     def value_is_double(id):
+        """Returns true if the storage_kind of the point with the given id is a double."""
         storage_kind = query_single_cell("""
             SELECT storage_kind
             FROM value_types
@@ -314,16 +370,24 @@ class Categories:
 
     @staticmethod
     def all():
+        """Returns a JSON-encoded array of all Categories."""
         return query_json_array(Categories.sql_query)
 
     @staticmethod
     def get_id(id):
+        """Returns the JSON-encoded Category whose id is that given."""
         return query_json_item(Categories.sql_query + "WHERE category_id = %s", id)
 
 
 class Values:
     @staticmethod
     def add(point_id, timestamp, value):
+        """Adds a value to the database.
+
+        :param point_id: The point_id of the point from which this value was recorded
+        :param timestamp: The UNIX Epoch time when this value was recorded
+        :param value: The value that was recorded
+        """
         value_is_double = Points.value_is_double(point_id)
         if value_is_double:
             insert("""
@@ -336,6 +400,15 @@ class Values:
 
     @staticmethod
     def get(point_ids, start_time, end_time):
+        """Returns JSON-encoded array of values which match the given parameters.
+
+        :param point_ids: A list of the IDs of the points whose values should be included
+        :param start_time: The UNIX Epoch time which marks the beginning of the range to be
+        included, inclusive
+        :param end_time: The UNIX Epoch time which marks the end of the range to be
+        included, inclusive
+        :return: A JSON-encoded array of Values.
+        """
         return query_json_array("""
             SELECT value_id, points.name AS point_name, timestamp, int AS value
             FROM values
