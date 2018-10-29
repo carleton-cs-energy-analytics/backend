@@ -5,7 +5,7 @@ from backend.database.models import Points
 string_beginning = " WHERE "
 
 
-class SearchTests(unittest.TestCase):
+class PointSearchTests(unittest.TestCase):
 
     def test_simple_building(self):
         self.assertEqual(Search.points("@12"),
@@ -88,7 +88,7 @@ class SearchTests(unittest.TestCase):
         ids = Points.ids_where(Search.points("@1 and :floor > 2"))
         self.assertEqual(ids, [2, 1])
 
-    def test_search_building_or_room(self):
+    def test_search_building_or_device(self):
         self.assertEqual(set(Points.ids_where(Search.points("@2 or %4"))), {3, 4, 5})
 
     def test_search_tag(self):

@@ -5,7 +5,7 @@ from backend.database.models import query_single_column
 class Search:
 
     @staticmethod
-    def parse(source_string):
+    def parse(source_string, search_type):
         sql_string = " WHERE "
 
         # @ -> buildings, # -> tags, $ -> rooms, % -> devices, * -> points
@@ -16,11 +16,20 @@ class Search:
             token = token[0]
             if re.match("@\\d+", token):
                 sql_string += " buildings.building_id = " + token[1:]
-            elif re.match("#\\d+", token):
+            elif re.match("#\\d+", token) and search_type == 'point':
                 sql_string += " (points_tags.tag_id = " + token[1:] + \
                               " OR devices_tags.tag_id = " + token[1:] + \
                               " OR rooms_tags.tag_id = " + token[1:] + \
                               " OR buildings_tags.tag_id = " + token[1:] + ")"
+            elif re.match("#\\d+", token) and search_type == 'device':
+                sql_string += " (devices_tags.tag_id = " + token[1:] + \
+                              " OR rooms_tags.tag_id = " + token[1:] + \
+                              " OR buildings_tags.tag_id = " + token[1:] + ")"
+            elif re.match("#\\d+", token) and search_type == 'room':
+                sql_string += " (rooms_tags.tag_id = " + token[1:] + \
+                              " OR buildings_tags.tag_id = " + token[1:] + ")"
+            elif re.match("#\\d+", token) and search_type == 'building':
+                sql_string += " buildings_tags.tag_id = " + token[1:]
             elif re.match("\\$\\d+", token):
                 sql_string += " rooms.room_id = " + token[1:]
             elif re.match("%\\d+", token):
@@ -61,34 +70,34 @@ class Search:
         if regex.match(source_string) is None:
             raise Exception("Invalid source string for points.")
 
-        return Search.parse(source_string)
+        return Search.parse(source_string, 'point')
 
     @staticmethod
     def devices(source_string):
         # @ -> buildings, # -> tags, $ -> rooms, % -> devices
-        regex = "^([@#$%]\\d+|and|or|not|:(floor) (([<>=]|!=|<=|>=)? ?(\\d+))|\\(|\\))+$"
+        regex = re.compile("^([@#$%]\\d+|and|or|not|:(floor) (([<>=]|!=|<=|>=)? ?(\\d+))|\\(|\\)|\\s+)+$")
 
-        if re.match(regex, source_string) is None:
+        if regex.match(source_string) is None:
             raise Exception("Invalid source string for devices.")
 
-        return Search.parse(source_string)
+        return Search.parse(source_string, 'device')
 
     @staticmethod
     def rooms(source_string):
         # @ -> buildings, # -> tags, $ -> rooms
-        regex = "^([@#$]\\d+|and|or|not|:(floor) (([<>=]|!=|<=|>=)? ?(\\d+))|\\(|\\))+$"
+        regex = re.compile("^([@#$]\\d+|and|or|not|:(floor) (([<>=]|!=|<=|>=)? ?(\\d+))|\\(|\\)|\\s+)+$")
 
-        if re.match(regex, source_string) is None:
+        if regex.match(source_string) is None:
             raise Exception("Invalid source string for rooms.")
 
-        return Search.parse(source_string)
+        return Search.parse(source_string, 'room')
 
     @staticmethod
     def buildings(source_string):
         # @ -> buildings, # -> tags
-        regex = "^([@#]\\d+|and|or|not (([<>=]|!=|<=|>=)? ?(\\d+))|\\(|\\))+$"
+        regex = re.compile("^([@#]\\d+|and|or|not|\\(|\\)|\\s+)+$")
 
-        if re.match(regex, source_string) is None:
+        if regex.match(source_string) is None:
             raise Exception("Invalid source string for buildings.")
 
-        return Search.parse(source_string)
+        return Search.parse(source_string, 'building')
