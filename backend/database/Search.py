@@ -66,7 +66,7 @@ class Search:
             elif re.match("\)", token):
                 sql_string += ")"
 
-        return sql_string + ";"
+        return sql_string
 
     @staticmethod
     def points(source_string):

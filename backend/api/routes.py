@@ -1,12 +1,17 @@
 from flask import Blueprint
+from flask import request
 from backend.database.models import *
+from backend.database.Search import Search
 
 api = Blueprint('api', __name__)
 
 
 @api.route('/buildings')
 def get_all_buildings():
-    return Buildings.all()
+    if request.args.get('search'):
+        return Buildings.where(Search.buildings(request.args.get('search')))
+    else:
+        return Buildings.all()
 
 
 @api.route('/building/<id>')
@@ -16,7 +21,10 @@ def get_building(id):
 
 @api.route('/rooms')
 def get_all_rooms():
-    return Rooms.all()
+    if request.args.get('search'):
+        Rooms.where(Search.rooms(request.args.get('search')))
+    else:
+        return Rooms.all()
 
 
 @api.route('/room/<id>')
@@ -36,17 +44,23 @@ def get_tag_by_id(id):
 
 @api.route('/devices')
 def get_all_devices():
-    return Devices.all()
+    if request.args.get('search'):
+        Devices.where(Search.devices(request.args.get('search')))
+    else:
+        return Devices.all()
 
 
 @api.route('/device/<id>')
 def get_device_by_id(id):
-    return Devices.get(id)
+    return Devices.get_by_id(id)
 
 
 @api.route('/points')
 def get_all_points():
-    return Points.all()
+    if request.args.get('search'):
+        Points.where(Search.points(request.args.get('search')))
+    else:
+        return Points.all()
 
 
 @api.route('/point/<id>')

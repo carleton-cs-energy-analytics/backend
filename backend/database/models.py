@@ -248,14 +248,20 @@ class Devices:
         return query_json_array(Devices.sql_query)
 
     @staticmethod
-    def get(id):
+    def get_by_id(id):
         """Returns the JSON-encoded Device whose id is that given."""
         return query_json_item(Devices.sql_query + "WHERE device_id = %s", id)
 
     @staticmethod
+    def get_by_ids(ids):
+        """Returns a JSON-encoded array of all Device whose ids were given."""
+        return query_json_array(Devices.sql_query + "WHERE device_id IN %s", (tuple(ids),))
+
+    @staticmethod
     def where(where_clause):
         """Returns a JSON-encoded array of all Devices which match the given WHERE-clause."""
-        return query_json_array(Devices.sql_query + where_clause)
+        ids = Devices.ids_where(where_clause)
+        return Devices.get_by_ids(ids)
 
     @staticmethod
     def ids_where(where_clause):
