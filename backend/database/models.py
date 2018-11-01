@@ -153,14 +153,20 @@ class Points:
         return query_json_array(Points.sql_query)
 
     @staticmethod
-    def get(id):
+    def get_by_id(id):
         """Returns the JSON-encoded Point whose id is that given."""
         return query_json_item(Points.sql_query + "WHERE point_id = %s", id)
 
     @staticmethod
+    def get_by_ids(ids):
+        """Returns a JSON-encoded array of all Points whose ids were given."""
+        return query_json_array(Points.sql_query + "WHERE point_id IN %s", (tuple(ids),))
+
+    @staticmethod
     def where(where_clause):
         """Returns a JSON-encoded array of all Points which match the given WHERE-clause."""
-        return query_json_array(Points.sql_query + where_clause)
+        ids = Points.ids_where(where_clause)
+        return Points.get_by_ids(ids)
 
     @staticmethod
     def ids_where(where_clause):
@@ -287,14 +293,20 @@ class Rooms:
         return query_json_array(Rooms.sql_query)
 
     @staticmethod
-    def get(id):
+    def get_by_id(id):
         """Returns the JSON-encoded Room whose id is that given."""
         return query_json_item(Rooms.sql_query + "WHERE room_id = %s", id)
 
     @staticmethod
+    def get_by_ids(ids):
+        """Returns a JSON-encoded array of all Rooms whose ids were given."""
+        return query_json_array(Rooms.sql_query + "WHERE room_id IN %s", (tuple(ids),))
+
+    @staticmethod
     def where(where_clause):
         """Returns a JSON-encoded array of all Rooms which match the given WHERE-clause."""
-        return query_json_array(Rooms.sql_query + where_clause)
+        ids = Rooms.ids_where(where_clause)
+        return Rooms.get_by_ids(ids)
 
     @staticmethod
     def ids_where(where_clause):
@@ -328,14 +340,20 @@ class Buildings:
         return query_json_array(Buildings.sql_query)
 
     @staticmethod
-    def get(id):
+    def get_by_id(id):
         """Returns the JSON-encoded Building whose id is that given."""
         return query_json_item(Buildings.sql_query + "WHERE buildings.building_id = %s", id)
 
     @staticmethod
+    def get_by_ids(ids):
+        """Returns a JSON-encoded array of all Buildings whose ids were given."""
+        return query_json_array(Buildings.sql_query + "WHERE building_id IN %s", (tuple(ids),))
+
+    @staticmethod
     def where(where_clause):
         """Returns a JSON-encoded array of all Buildings which match the given WHERE-clause."""
-        return query_json_array(Buildings.sql_query + where_clause)
+        ids = Buildings.ids_where(where_clause)
+        return Buildings.get_by_ids(ids)
 
     @staticmethod
     def ids_where(where_clause):
@@ -366,7 +384,7 @@ class Tags:
         return query_json_array(Tags.sql_query)
 
     @staticmethod
-    def get(id):
+    def get_by_id(id):
         """Returns the JSON-encoded Tag whose id is that given."""
         return query_json_item(Tags.sql_query + "WHERE tag_id = %s", id)
 
