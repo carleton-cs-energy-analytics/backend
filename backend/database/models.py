@@ -99,186 +99,6 @@ def insert(query, vars=None):
         CONN.commit()
 
 
-class Buildings:
-    sql_query = """
-        SELECT building_id, name AS building_name,
-            (SELECT
-                ARRAY(SELECT name
-                    FROM tags
-                        INNER JOIN buildings_tags
-                            ON tags.tag_id = buildings_tags.tag_id
-                    WHERE buildings_tags.building_id = buildings.building_id)) AS tags
-        FROM buildings
-        """
-
-    @staticmethod
-    def all():
-        """Returns a JSON-encoded array of all Buildings."""
-        return query_json_array(Buildings.sql_query)
-
-    @staticmethod
-    def get(id):
-        """Returns the JSON-encoded Building whose id is that given."""
-        return query_json_item(Buildings.sql_query + "WHERE buildings.building_id = %s", id)
-
-    @staticmethod
-    def where(where_clause):
-        """Returns a JSON-encoded array of all Buildings which match the given WHERE-clause."""
-        return query_json_array(Buildings.sql_query + where_clause)
-
-    @staticmethod
-    def ids_where(where_clause):
-        """Returns a list of the ids of all Buildings which match the given WHERE-clause."""
-        base_query = """
-            SELECT DISTINCT buildings.building_id 
-            FROM buildings
-                LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
-        """
-
-        return query_single_column(base_query + where_clause)
-
-
-class Rooms:
-    sql_query = """
-        SELECT room_id,
-           rooms.name AS room_name,
-           rooms.building_id,
-           buildings.name AS building_name,
-           floor,
-           rooms.description,
-           (SELECT 
-                ARRAY(SELECT name
-                     FROM tags
-                            INNER JOIN rooms_tags ON tags.tag_id = rooms_tags.tag_id
-                     WHERE rooms_tags.room_id = rooms.room_id
-                         UNION
-                     SELECT name
-                     FROM tags
-                            INNER JOIN buildings_tags ON tags.tag_id = buildings_tags.tag_id
-                     WHERE buildings_tags.building_id = buildings.building_id
-                       )) AS tags
-        FROM rooms
-            LEFT JOIN buildings ON rooms.building_id = buildings.building_id
-        """
-
-    @staticmethod
-    def all():
-        """Returns a JSON-encoded array of all Rooms."""
-        return query_json_array(Rooms.sql_query)
-
-    @staticmethod
-    def get(id):
-        """Returns the JSON-encoded Room whose id is that given."""
-        return query_json_item(Rooms.sql_query + "WHERE room_id = %s", id)
-
-    @staticmethod
-    def where(where_clause):
-        """Returns a JSON-encoded array of all Rooms which match the given WHERE-clause."""
-        return query_json_array(Rooms.sql_query + where_clause)
-
-    @staticmethod
-    def ids_where(where_clause):
-        """Returns a list of the ids of all Rooms which match the given WHERE-clause."""
-        base_query = """
-                SELECT DISTINCT rooms.room_id
-                FROM rooms
-                    LEFT JOIN buildings ON rooms.building_id = buildings.building_id
-                    LEFT JOIN rooms_tags ON rooms.room_id = rooms_tags.room_id
-                    LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
-        """
-
-        return query_single_column(base_query + where_clause)
-
-
-class Tags:
-    sql_query = """
-        SELECT tag_id,
-           tags.name AS tag_name,
-           tags.category_id,
-           categories.name AS category_name,
-           tags.description
-        FROM tags
-            LEFT JOIN categories ON tags.category_id = categories.category_id
-        """
-
-    @staticmethod
-    def all():
-        """Returns a JSON-encoded array of all Tags."""
-        return query_json_array(Tags.sql_query)
-
-    @staticmethod
-    def get(id):
-        """Returns the JSON-encoded Tag whose id is that given."""
-        return query_json_item(Tags.sql_query + "WHERE tag_id = %s", id)
-
-
-class Devices:
-    sql_query = """
-        SELECT devices.device_id,
-            devices.name AS device_name,
-            rooms.room_id,
-            rooms.name AS room_name,
-            buildings.building_id,
-            buildings.name AS building_name,
-            (SELECT 
-                ARRAY(SELECT name
-                     FROM tags
-                            INNER JOIN devices_tags ON tags.tag_id = devices_tags.tag_id
-                     WHERE devices_tags.device_id = devices.device_id
-                         UNION
-                     SELECT name
-                     FROM tags
-                            INNER JOIN rooms_tags ON tags.tag_id = rooms_tags.tag_id
-                     WHERE rooms_tags.room_id = rooms.room_id
-                         UNION
-                     SELECT name
-                     FROM tags
-                            INNER JOIN buildings_tags ON tags.tag_id = buildings_tags.tag_id
-                     WHERE buildings_tags.building_id = buildings.building_id
-                       )) AS tags,
-            devices.description
-        FROM devices
-            LEFT JOIN rooms ON devices.room_id = rooms.room_id
-            LEFT JOIN buildings ON rooms.building_id = buildings.building_id
-        """
-
-    @staticmethod
-    def all():
-        """Returns a JSON-encoded array of all Devices."""
-        return query_json_array(Devices.sql_query)
-
-    @staticmethod
-    def get_by_id(id):
-        """Returns the JSON-encoded Device whose id is that given."""
-        return query_json_item(Devices.sql_query + "WHERE device_id = %s", id)
-
-    @staticmethod
-    def get_by_ids(ids):
-        """Returns a JSON-encoded array of all Device whose ids were given."""
-        return query_json_array(Devices.sql_query + "WHERE device_id IN %s", (tuple(ids),))
-
-    @staticmethod
-    def where(where_clause):
-        """Returns a JSON-encoded array of all Devices which match the given WHERE-clause."""
-        ids = Devices.ids_where(where_clause)
-        return Devices.get_by_ids(ids)
-
-    @staticmethod
-    def ids_where(where_clause):
-        """Returns a list of the ids of all Devices which match the given WHERE-clause."""
-        base_query = """
-                    SELECT DISTINCT devices.device_id
-                    FROM devices
-                        LEFT JOIN rooms ON devices.room_id = rooms.room_id
-                        LEFT JOIN buildings ON rooms.building_id = buildings.building_id
-                        LEFT JOIN devices_tags ON devices.device_id = devices_tags.device_id
-                        LEFT JOIN rooms_tags ON rooms.room_id = rooms_tags.room_id
-                        LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
-            """
-
-        return query_single_column(base_query + where_clause)
-
-
 class Points:
     sql_query = """
         SELECT points.point_id, 
@@ -369,6 +189,186 @@ class Points:
             WHERE point_id = %s
             ;""", id)
         return storage_kind == 'double'
+
+
+class Devices:
+    sql_query = """
+        SELECT devices.device_id,
+            devices.name AS device_name,
+            rooms.room_id,
+            rooms.name AS room_name,
+            buildings.building_id,
+            buildings.name AS building_name,
+            (SELECT 
+                ARRAY(SELECT name
+                     FROM tags
+                            INNER JOIN devices_tags ON tags.tag_id = devices_tags.tag_id
+                     WHERE devices_tags.device_id = devices.device_id
+                         UNION
+                     SELECT name
+                     FROM tags
+                            INNER JOIN rooms_tags ON tags.tag_id = rooms_tags.tag_id
+                     WHERE rooms_tags.room_id = rooms.room_id
+                         UNION
+                     SELECT name
+                     FROM tags
+                            INNER JOIN buildings_tags ON tags.tag_id = buildings_tags.tag_id
+                     WHERE buildings_tags.building_id = buildings.building_id
+                       )) AS tags,
+            devices.description
+        FROM devices
+            LEFT JOIN rooms ON devices.room_id = rooms.room_id
+            LEFT JOIN buildings ON rooms.building_id = buildings.building_id
+        """
+
+    @staticmethod
+    def all():
+        """Returns a JSON-encoded array of all Devices."""
+        return query_json_array(Devices.sql_query)
+
+    @staticmethod
+    def get_by_id(id):
+        """Returns the JSON-encoded Device whose id is that given."""
+        return query_json_item(Devices.sql_query + "WHERE device_id = %s", id)
+
+    @staticmethod
+    def get_by_ids(ids):
+        """Returns a JSON-encoded array of all Device whose ids were given."""
+        return query_json_array(Devices.sql_query + "WHERE device_id IN %s", (tuple(ids),))
+
+    @staticmethod
+    def where(where_clause):
+        """Returns a JSON-encoded array of all Devices which match the given WHERE-clause."""
+        ids = Devices.ids_where(where_clause)
+        return Devices.get_by_ids(ids)
+
+    @staticmethod
+    def ids_where(where_clause):
+        """Returns a list of the ids of all Devices which match the given WHERE-clause."""
+        base_query = """
+                    SELECT DISTINCT devices.device_id
+                    FROM devices
+                        LEFT JOIN rooms ON devices.room_id = rooms.room_id
+                        LEFT JOIN buildings ON rooms.building_id = buildings.building_id
+                        LEFT JOIN devices_tags ON devices.device_id = devices_tags.device_id
+                        LEFT JOIN rooms_tags ON rooms.room_id = rooms_tags.room_id
+                        LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
+            """
+
+        return query_single_column(base_query + where_clause)
+
+
+class Rooms:
+    sql_query = """
+        SELECT room_id,
+           rooms.name AS room_name,
+           rooms.building_id,
+           buildings.name AS building_name,
+           floor,
+           rooms.description,
+           (SELECT 
+                ARRAY(SELECT name
+                     FROM tags
+                            INNER JOIN rooms_tags ON tags.tag_id = rooms_tags.tag_id
+                     WHERE rooms_tags.room_id = rooms.room_id
+                         UNION
+                     SELECT name
+                     FROM tags
+                            INNER JOIN buildings_tags ON tags.tag_id = buildings_tags.tag_id
+                     WHERE buildings_tags.building_id = buildings.building_id
+                       )) AS tags
+        FROM rooms
+            LEFT JOIN buildings ON rooms.building_id = buildings.building_id
+        """
+
+    @staticmethod
+    def all():
+        """Returns a JSON-encoded array of all Rooms."""
+        return query_json_array(Rooms.sql_query)
+
+    @staticmethod
+    def get(id):
+        """Returns the JSON-encoded Room whose id is that given."""
+        return query_json_item(Rooms.sql_query + "WHERE room_id = %s", id)
+
+    @staticmethod
+    def where(where_clause):
+        """Returns a JSON-encoded array of all Rooms which match the given WHERE-clause."""
+        return query_json_array(Rooms.sql_query + where_clause)
+
+    @staticmethod
+    def ids_where(where_clause):
+        """Returns a list of the ids of all Rooms which match the given WHERE-clause."""
+        base_query = """
+                SELECT DISTINCT rooms.room_id
+                FROM rooms
+                    LEFT JOIN buildings ON rooms.building_id = buildings.building_id
+                    LEFT JOIN rooms_tags ON rooms.room_id = rooms_tags.room_id
+                    LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
+        """
+
+        return query_single_column(base_query + where_clause)
+
+
+class Buildings:
+    sql_query = """
+        SELECT building_id, name AS building_name,
+            (SELECT
+                ARRAY(SELECT name
+                    FROM tags
+                        INNER JOIN buildings_tags
+                            ON tags.tag_id = buildings_tags.tag_id
+                    WHERE buildings_tags.building_id = buildings.building_id)) AS tags
+        FROM buildings
+        """
+
+    @staticmethod
+    def all():
+        """Returns a JSON-encoded array of all Buildings."""
+        return query_json_array(Buildings.sql_query)
+
+    @staticmethod
+    def get(id):
+        """Returns the JSON-encoded Building whose id is that given."""
+        return query_json_item(Buildings.sql_query + "WHERE buildings.building_id = %s", id)
+
+    @staticmethod
+    def where(where_clause):
+        """Returns a JSON-encoded array of all Buildings which match the given WHERE-clause."""
+        return query_json_array(Buildings.sql_query + where_clause)
+
+    @staticmethod
+    def ids_where(where_clause):
+        """Returns a list of the ids of all Buildings which match the given WHERE-clause."""
+        base_query = """
+            SELECT DISTINCT buildings.building_id 
+            FROM buildings
+                LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
+        """
+
+        return query_single_column(base_query + where_clause)
+
+
+class Tags:
+    sql_query = """
+        SELECT tag_id,
+           tags.name AS tag_name,
+           tags.category_id,
+           categories.name AS category_name,
+           tags.description
+        FROM tags
+            LEFT JOIN categories ON tags.category_id = categories.category_id
+        """
+
+    @staticmethod
+    def all():
+        """Returns a JSON-encoded array of all Tags."""
+        return query_json_array(Tags.sql_query)
+
+    @staticmethod
+    def get(id):
+        """Returns the JSON-encoded Tag whose id is that given."""
+        return query_json_item(Tags.sql_query + "WHERE tag_id = %s", id)
 
 
 class Categories:
