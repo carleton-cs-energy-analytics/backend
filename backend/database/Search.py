@@ -6,6 +6,13 @@ class Search:
 
     @staticmethod
     def parse(source_string, search_type):
+        """Generates a SQL WHERE-clause from the given search source string.
+
+        :param source_string: The source of the search to be parsed
+        :param search_type: A string representing the table being searched; one of 'point',
+        'device', 'room' or 'building'
+        :return: The generated SQL WHERE-clause
+        """
         sql_string = " WHERE "
 
         # @ -> buildings, # -> tags, $ -> rooms, % -> devices, * -> points
@@ -48,7 +55,6 @@ class Search:
             elif re.match(":measurement (\'\\w+\')", token):
                 matches = re.match(":measurement (\'\\w+\')", token).groups()
                 sql_string += " value_units.measurement = " + matches[0]
-
             elif re.match("and", token):
                 sql_string += " AND"
             elif re.match("or", token):
@@ -64,6 +70,9 @@ class Search:
 
     @staticmethod
     def points(source_string):
+        """Uses the given search string to generate a SQL WHERE-clause to be used in a query for
+        points.
+        """
         # @ -> buildings, # -> tags, $ -> rooms, % -> devices, * -> points
         regex = re.compile("^([@#$%*]\\d+|and|or|not|:(floor|type|unit|measurement) (([<>=]|!=|<=|>=)? ?(\\d+)|(\'\\w+\'))|\\(|\\)|\\s+)+$")
 
@@ -74,6 +83,9 @@ class Search:
 
     @staticmethod
     def devices(source_string):
+        """Uses the given search string to generate a SQL WHERE-clause to be used in a query for
+        devices.
+        """
         # @ -> buildings, # -> tags, $ -> rooms, % -> devices
         regex = re.compile("^([@#$%]\\d+|and|or|not|:(floor) (([<>=]|!=|<=|>=)? ?(\\d+))|\\(|\\)|\\s+)+$")
 
@@ -84,6 +96,9 @@ class Search:
 
     @staticmethod
     def rooms(source_string):
+        """Uses the given search string to generate a SQL WHERE-clause to be used in a query for
+        rooms.
+        """
         # @ -> buildings, # -> tags, $ -> rooms
         regex = re.compile("^([@#$]\\d+|and|or|not|:(floor) (([<>=]|!=|<=|>=)? ?(\\d+))|\\(|\\)|\\s+)+$")
 
@@ -94,6 +109,9 @@ class Search:
 
     @staticmethod
     def buildings(source_string):
+        """Uses the given search string to generate a SQL WHERE-clause to be used in a query for
+        buildings.
+        """
         # @ -> buildings, # -> tags
         regex = re.compile("^([@#]\\d+|and|or|not|\\(|\\)|\\s+)+$")
 
