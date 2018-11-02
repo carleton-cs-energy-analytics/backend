@@ -81,8 +81,6 @@ def query_single_cell(query, vars=None):
     with CONN.cursor() as curs:
         curs.execute(query, vars)
         result = curs.fetchall()
-        print(type(result))
-        print(result)
         assert len(result) == 1
         assert len(result[0]) == 1
         return result[0][0]
@@ -193,7 +191,7 @@ class Points:
             FROM value_types
                 INNER JOIN points ON value_types.value_type_id = points.value_type_id
             WHERE point_id = %s
-            ;""", id)
+            ;""", (id,))
         return storage_kind == 'double'
 
 

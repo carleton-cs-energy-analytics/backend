@@ -1,5 +1,4 @@
-from flask import Blueprint
-from flask import request
+from flask import Blueprint, request, abort
 from backend.database.models import *
 from backend.database.Search import Search
 
@@ -7,7 +6,7 @@ api = Blueprint('api', __name__)
 
 
 @api.route('/points')
-def get_all_points():
+def get_points():
     if request.args.get('search'):
         Points.where(Search.points(request.args.get('search')))
     else:
@@ -20,7 +19,7 @@ def get_point_by_id(id):
 
 
 @api.route('/devices')
-def get_all_devices():
+def get_devices():
     if request.args.get('search'):
         Devices.where(Search.devices(request.args.get('search')))
     else:
@@ -33,7 +32,7 @@ def get_device_by_id(id):
 
 
 @api.route('/rooms')
-def get_all_rooms():
+def get_rooms():
     if request.args.get('search'):
         Rooms.where(Search.rooms(request.args.get('search')))
     else:
@@ -46,7 +45,7 @@ def get_room(id):
 
 
 @api.route('/buildings')
-def get_all_buildings():
+def get_buildings():
     if request.args.get('search'):
         return Buildings.where(Search.buildings(request.args.get('search')))
     else:
@@ -76,3 +75,20 @@ def get_all_categories():
 @api.route('/category/<id>')
 def get_tags_by_category_id(id):
     return Categories.get_id(id)
+
+
+@api.route('/values', methods=['GET'])
+def get_values():
+    point_ids = request.args.getlist('point_ids')
+    start_time = request.args.get('start_time')
+    end_time = request.args.get('end_time')
+
+    return Values.get(tuple(point_ids), start_time, end_time)
+
+
+@api.route('values', methods=['POST'])
+def post_values():
+    values = request.get_json()
+    for value in values:
+        Values.add(value[0], value[1], value[2])
+    return "Success"
