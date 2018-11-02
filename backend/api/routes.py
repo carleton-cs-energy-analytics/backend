@@ -74,7 +74,7 @@ def get_all_categories():
 
 @api.route('/category/<id>')
 def get_tags_by_category_id(id):
-    return Categories.get_id(id)
+    return Categories.get_by_id(id)
 
 
 @api.route('/values', methods=['GET'])

@@ -153,7 +153,7 @@ class Points:
     @staticmethod
     def get_by_id(id):
         """Returns the JSON-encoded Point whose id is that given."""
-        return query_json_item(Points.sql_query + "WHERE point_id = %s", id)
+        return query_json_item(Points.sql_query + "WHERE point_id = %s", (id,))
 
     @staticmethod
     def get_by_ids(ids):
@@ -233,7 +233,7 @@ class Devices:
     @staticmethod
     def get_by_id(id):
         """Returns the JSON-encoded Device whose id is that given."""
-        return query_json_item(Devices.sql_query + "WHERE device_id = %s", id)
+        return query_json_item(Devices.sql_query + "WHERE device_id = %s", (id,))
 
     @staticmethod
     def get_by_ids(ids):
@@ -293,7 +293,7 @@ class Rooms:
     @staticmethod
     def get_by_id(id):
         """Returns the JSON-encoded Room whose id is that given."""
-        return query_json_item(Rooms.sql_query + "WHERE room_id = %s", id)
+        return query_json_item(Rooms.sql_query + "WHERE room_id = %s", (id,))
 
     @staticmethod
     def get_by_ids(ids):
@@ -340,7 +340,7 @@ class Buildings:
     @staticmethod
     def get_by_id(id):
         """Returns the JSON-encoded Building whose id is that given."""
-        return query_json_item(Buildings.sql_query + "WHERE buildings.building_id = %s", id)
+        return query_json_item(Buildings.sql_query + "WHERE buildings.building_id = %s", (id,))
 
     @staticmethod
     def get_by_ids(ids):
@@ -384,7 +384,7 @@ class Tags:
     @staticmethod
     def get_by_id(id):
         """Returns the JSON-encoded Tag whose id is that given."""
-        return query_json_item(Tags.sql_query + "WHERE tag_id = %s", id)
+        return query_json_item(Tags.sql_query + "WHERE tag_id = %s", (id,))
 
 
 class Categories:
@@ -396,9 +396,9 @@ class Categories:
         return query_json_array(Categories.sql_query)
 
     @staticmethod
-    def get_id(id):
+    def get_by_id(id):
         """Returns the JSON-encoded Category whose id is that given."""
-        return query_json_item(Categories.sql_query + "WHERE category_id = %s", id)
+        return query_json_item(Categories.sql_query + "WHERE category_id = %s", (id,))
 
 
 class Values:
