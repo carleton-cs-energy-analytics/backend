@@ -1,4 +1,4 @@
-from flask import Blueprint, request, abort
+from flask import Blueprint, request
 from backend.database.models import *
 from backend.database.Search import Search
 
