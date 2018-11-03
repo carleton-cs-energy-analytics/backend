@@ -31,9 +31,7 @@ def query_json_array(query, vars=None):
     :return: A string containing the JSON-encoded results of the query
     """
     with CONN.cursor() as curs:
-        curs.execute(
-            "SELECT json_agg(a)::TEXT FROM (" + query + ") AS a;",
-            vars)
+        curs.execute("SELECT json_agg(a)::TEXT FROM (" + query + ") AS a;", vars)
         result = curs.fetchall()
         assert len(result) == 1
         assert len(result[0]) == 1
@@ -158,6 +156,8 @@ class Points:
     @staticmethod
     def get_by_ids(ids):
         """Returns a JSON-encoded array of all Points whose ids were given."""
+        if len(ids) == 0:
+            return "[]"
         return query_json_array(Points.sql_query + "WHERE point_id IN %s", (tuple(ids),))
 
     @staticmethod
@@ -238,6 +238,8 @@ class Devices:
     @staticmethod
     def get_by_ids(ids):
         """Returns a JSON-encoded array of all Device whose ids were given."""
+        if len(ids) == 0:
+            return "[]"
         return query_json_array(Devices.sql_query + "WHERE device_id IN %s", (tuple(ids),))
 
     @staticmethod
@@ -298,6 +300,8 @@ class Rooms:
     @staticmethod
     def get_by_ids(ids):
         """Returns a JSON-encoded array of all Rooms whose ids were given."""
+        if len(ids) == 0:
+            return "[]"
         return query_json_array(Rooms.sql_query + "WHERE room_id IN %s", (tuple(ids),))
 
     @staticmethod
@@ -345,6 +349,8 @@ class Buildings:
     @staticmethod
     def get_by_ids(ids):
         """Returns a JSON-encoded array of all Buildings whose ids were given."""
+        if len(ids) == 0:
+            return "[]"
         return query_json_array(Buildings.sql_query + "WHERE building_id IN %s", (tuple(ids),))
 
     @staticmethod
@@ -431,6 +437,8 @@ class Values:
         included, inclusive
         :return: A JSON-encoded array of Values.
         """
+        if len(point_ids) == 0:
+            return "[]"
         return query_json_array("""
             SELECT value_id, points.name AS point_name, timestamp, int AS value
             FROM values

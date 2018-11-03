@@ -95,8 +95,33 @@ class DeviceSearchTests(unittest.TestCase):
     def test_ids_where_tag_not_building(self):
         self.assertEqual(set(Devices.ids_where(Search.devices("#1 and not @2"))), {1})
 
+    def test_all(self):
+        self.assertEqual(Devices.all(), """[{"device_id":2,"device_name":null,"room_id":1,"room_name":"328","building_id":1,"building_name":"CMC","tags":["classroom","math_stats","academic","computer_science"],"description":"Fishbowl vav"}, 
+ {"device_id":1,"device_name":null,"room_id":1,"room_name":"328","building_id":1,"building_name":"CMC","tags":["classroom","math_stats","academic","thermostat","computer_science"],"description":"Fishbowl thermostat"}, 
+ {"device_id":4,"device_name":null,"room_id":3,"room_name":"102","building_id":1,"building_name":"CMC","tags":["math_stats","academic","computer_science"],"description":"102 Lab thermostat"}, 
+ {"device_id":3,"device_name":null,"room_id":4,"room_name":"107","building_id":2,"building_name":"Evans","tags":["thermostat","residential","single","residence"],"description":"Thermostat in Evans 107"}]""")
+
     def test_where_building(self):
         self.assertEqual(Devices.where(Search.devices("@2")), '[{"device_id":3,"device_name":null,"room_id":4,"room_name":"107","building_id":2,"building_name":"Evans","tags":["thermostat","residential","single","residence"],"description":"Thermostat in Evans 107"}]')
+
+    def test_where_building_floor(self):
+        self.assertEqual(Devices.where(Search.devices("@1 and :floor > 2")), """[{"device_id":1,"device_name":null,"room_id":1,"room_name":"328","building_id":1,"building_name":"CMC","tags":["classroom","math_stats","academic","thermostat","computer_science"],"description":"Fishbowl thermostat"}, 
+ {"device_id":2,"device_name":null,"room_id":1,"room_name":"328","building_id":1,"building_name":"CMC","tags":["classroom","math_stats","academic","computer_science"],"description":"Fishbowl vav"}]""")
+
+    def test_where_building_or_device(self):
+        self.assertEqual(Devices.where(Search.devices("@2 or %4")), """[{"device_id":3,"device_name":null,"room_id":4,"room_name":"107","building_id":2,"building_name":"Evans","tags":["thermostat","residential","single","residence"],"description":"Thermostat in Evans 107"}, 
+ {"device_id":4,"device_name":null,"room_id":3,"room_name":"102","building_id":1,"building_name":"CMC","tags":["math_stats","academic","computer_science"],"description":"102 Lab thermostat"}]""")
+
+    def test_where_tag(self):
+        self.assertEqual(Devices.where(Search.devices("#11")), """[{"device_id":2,"device_name":null,"room_id":1,"room_name":"328","building_id":1,"building_name":"CMC","tags":["classroom","math_stats","academic","computer_science"],"description":"Fishbowl vav"}, 
+ {"device_id":1,"device_name":null,"room_id":1,"room_name":"328","building_id":1,"building_name":"CMC","tags":["classroom","math_stats","academic","thermostat","computer_science"],"description":"Fishbowl thermostat"}, 
+ {"device_id":4,"device_name":null,"room_id":3,"room_name":"102","building_id":1,"building_name":"CMC","tags":["math_stats","academic","computer_science"],"description":"102 Lab thermostat"}]""")
+
+    def test_where_building_and_tag(self):
+        self.assertEqual(Devices.where(Search.devices("@1 and #2")), "[]")
+
+    def test_where_tag_not_building(self):
+        self.assertEqual(Devices.where(Search.devices("#1 and not @2")), """[{"device_id":1,"device_name":null,"room_id":1,"room_name":"328","building_id":1,"building_name":"CMC","tags":["classroom","math_stats","academic","thermostat","computer_science"],"description":"Fishbowl thermostat"}]""")
 
 if __name__ == '__main__':
     unittest.main()

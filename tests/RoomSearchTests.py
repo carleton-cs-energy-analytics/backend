@@ -93,5 +93,33 @@ class RoomSearchTests(unittest.TestCase):
     def test_ids_where_tag_not_building(self):
         self.assertEqual(set(Rooms.ids_where(Search.rooms("#7 and not @1"))), {4})
 
+    def test_all(self):
+        self.assertEqual(Rooms.all(), """[{"room_id":1,"room_name":"328","building_id":1,"building_name":"CMC","floor":3,"description":"Fishbowl","tags":["classroom","math_stats","academic","computer_science"]}, 
+ {"room_id":2,"room_name":"304","building_id":1,"building_name":"CMC","floor":3,"description":null,"tags":["math_stats","academic","computer_science"]}, 
+ {"room_id":3,"room_name":"102","building_id":1,"building_name":"CMC","floor":1,"description":null,"tags":["math_stats","academic","computer_science"]}, 
+ {"room_id":4,"room_name":"107","building_id":2,"building_name":"Evans","floor":1,"description":null,"tags":["residential","residence","single"]}, 
+ {"room_id":5,"room_name":"113","building_id":6,"building_name":"Sayles","floor":1,"description":"Sayles Great Space","tags":[]}]""")
+
+    def test_where_building(self):
+        self.assertEqual(Rooms.where(Search.rooms("@2")), """[{"room_id":4,"room_name":"107","building_id":2,"building_name":"Evans","floor":1,"description":null,"tags":["residential","residence","single"]}]""")
+
+    def test_where_building_floor(self):
+        self.assertEqual(Rooms.where(Search.rooms("@1 and :floor > 2")), """[{"room_id":2,"room_name":"304","building_id":1,"building_name":"CMC","floor":3,"description":null,"tags":["math_stats","academic","computer_science"]}, 
+ {"room_id":1,"room_name":"328","building_id":1,"building_name":"CMC","floor":3,"description":"Fishbowl","tags":["classroom","math_stats","academic","computer_science"]}]""")
+
+    def test_where_building_or_device(self):
+        with self.assertRaises(Exception): Rooms.where(Search.rooms("@2 or %4"))
+
+    def test_where_tag(self):
+        self.assertEqual(Rooms.where(Search.rooms("#11")), """[{"room_id":3,"room_name":"102","building_id":1,"building_name":"CMC","floor":1,"description":null,"tags":["math_stats","academic","computer_science"]}, 
+ {"room_id":2,"room_name":"304","building_id":1,"building_name":"CMC","floor":3,"description":null,"tags":["math_stats","academic","computer_science"]}, 
+ {"room_id":1,"room_name":"328","building_id":1,"building_name":"CMC","floor":3,"description":"Fishbowl","tags":["classroom","math_stats","academic","computer_science"]}]""")
+
+    def test_where_building_and_tag(self):
+        self.assertEqual(Rooms.where(Search.rooms("@1 and #2")), "[]")
+
+    def test_where_tag_not_building(self):
+        self.assertEqual(Rooms.where(Search.rooms("#7 and not @1")), """[{"room_id":4,"room_name":"107","building_id":2,"building_name":"Evans","floor":1,"description":null,"tags":["residential","residence","single"]}]""")
+
 if __name__ == '__main__':
     unittest.main()

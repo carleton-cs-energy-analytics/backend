@@ -75,5 +75,30 @@ class BuildingSearchTests(unittest.TestCase):
     def test_ids_where_tag_not_building(self):
         self.assertEqual(set(Buildings.ids_where(Search.buildings("#4 and not @1"))), {2})
 
+    def test_all(self):
+        self.assertEqual(Buildings.all(), """[{"building_id":1,"building_name":"CMC","tags":["academic","math_stats","computer_science"]}, 
+ {"building_id":2,"building_name":"Evans","tags":["residential"]}, 
+ {"building_id":3,"building_name":"Burton","tags":[]}, 
+ {"building_id":4,"building_name":"Davis","tags":[]}, 
+ {"building_id":5,"building_name":"Boliou","tags":[]}, 
+ {"building_id":6,"building_name":"Sayles","tags":[]}]""")
+
+
+    def test_where_building(self):
+        self.assertEqual(Buildings.where(Search.buildings("@2")), """[{"building_id":2,"building_name":"Evans","tags":["residential"]}]""")
+
+    def test_where_building_or_device(self):
+        with self.assertRaises(Exception): Buildings.where(Search.buildings("@2 or %4"))
+
+    def test_where_tag(self):
+        self.assertEqual(Buildings.where(Search.buildings("#11")), """[{"building_id":1,"building_name":"CMC","tags":["academic","math_stats","computer_science"]}]""")
+
+    def test_where_building_and_tag(self):
+        self.assertEqual(Buildings.where(Search.buildings("@1 and #5")), """[{"building_id":1,"building_name":"CMC","tags":["academic","math_stats","computer_science"]}]""")
+
+    def test_where_tag_not_building(self):
+        self.assertEqual(Buildings.where(Search.buildings("#4 and not @1")), """[{"building_id":2,"building_name":"Evans","tags":["residential"]}]""")
+
+
 if __name__ == '__main__':
     unittest.main()
