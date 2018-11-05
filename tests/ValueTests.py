@@ -9,24 +9,24 @@ class ValueTests(unittest.TestCase):
         insert("DELETE FROM values WHERE point_id = %s AND timestamp = %s AND int = %s", attributes)
 
     def test_get_add_single(self):
-        point_id = (3,)
+        point_name = ('EV.RM107.RT',)
         timestamp = 23
         value = 8
 
         start_time = 9
         end_time = 80
 
-        self.remove_point_to_be_added((point_id, start_time, end_time))
+        self.remove_point_to_be_added(((3,), start_time, end_time))
 
-        Values.add(point_id, timestamp, value)
-        result = Values.get(point_id, start_time, end_time)
+        Values.add(point_name, timestamp, value)
+        result = Values.get((3,), start_time, end_time)
 
         # silly fix because the value_id is changed each time the test is run
         self.assertEqual(result[:84] + result[-54:],
                          """[{"value_id":3,"point_name":"EV.RM107.RT","timestamp":13,"value":10}, 
  {"value_id":,"point_name":"EV.RM107.RT","timestamp":23,"value":8}]""")
 
-        self.remove_point_to_be_added((point_id, start_time, end_time))
+        self.remove_point_to_be_added(((3,), start_time, end_time))
 
     def test_get_single(self):
         self.assertEqual(Values.get((1,), 0, 3),

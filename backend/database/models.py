@@ -184,14 +184,14 @@ class Points:
         return query_single_column(base_query + where_clause)
 
     @staticmethod
-    def value_is_double(id):
+    def value_is_double(name):
         """Returns true if the storage_kind of the point with the given id is a double."""
         storage_kind = query_single_cell("""
             SELECT storage_kind
             FROM value_types
                 INNER JOIN points ON value_types.value_type_id = points.value_type_id
-            WHERE point_id = %s
-            ;""", (id,))
+            WHERE points.name = %s
+            ;""", (name,))
         return storage_kind == 'double'
 
 
@@ -409,22 +409,22 @@ class Categories:
 
 class Values:
     @staticmethod
-    def add(point_id, timestamp, value):
+    def add(point_name, timestamp, value):
         """Adds a value to the database.
 
-        :param point_id: The point_id of the point from which this value was recorded
+        :param point_name: The point_id of the point from which this value was recorded
         :param timestamp: The UNIX Epoch time when this value was recorded
         :param value: The value that was recorded
         """
-        value_is_double = Points.value_is_double(point_id)
+        value_is_double = Points.value_is_double(point_name)
         if value_is_double:
             insert("""
-            INSERT INTO values (point_id, timestamp, double) VALUES (%s, %s, %s);
-            """, (point_id, timestamp, value))
+            INSERT INTO values (point_id, timestamp, double) VALUES ((SELECT point_id FROM points WHERE name = %s), %s, %s);
+            """, (point_name, timestamp, value))
         else:
             insert("""
-            INSERT INTO values (point_id, timestamp, int) VALUES (%s, %s, %s);
-            """, (point_id, timestamp, value))
+            INSERT INTO values (point_id, timestamp, int) VALUES ((SELECT point_id FROM points WHERE name = %s), %s, %s);
+            """, (point_name, timestamp, value))
 
     @staticmethod
     def get(point_ids, start_time, end_time):

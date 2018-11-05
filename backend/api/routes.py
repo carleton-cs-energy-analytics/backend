@@ -86,7 +86,7 @@ def get_values():
     return Values.get(tuple(point_ids), start_time, end_time)
 
 
-@api.route('values', methods=['POST'])
+@api.route('/values', methods=['POST'])
 def post_values():
     values = request.get_json()
     for value in values:
