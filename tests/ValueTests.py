@@ -28,6 +28,10 @@ class ValueTests(unittest.TestCase):
 
         self.remove_point_to_be_added(((3,), start_time, end_time))
 
+    def test_add_enum(self):
+        Values.add('CMC.328.SP', 76, 'OFF')
+        self.remove_point_to_be_added(((2,), 76, 0))
+
     def test_get_single(self):
         self.assertEqual(Values.get((1,), 0, 3),
                          '[{"value_id":1,"point_name":"CMC.328.RT","timestamp":2,"value":6}]')

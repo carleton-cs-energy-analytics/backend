@@ -28,10 +28,12 @@ VALUES ('temperature', 'fahrenheit')
      , ('airflow', 'feet^3 minute^-1')
 ;
 
-INSERT INTO value_types (storage_kind)
-VALUES ('bool')
-     , ('int')
-     , ('double')
+INSERT INTO value_types (type)
+VALUES ('true')
+     , ('1')
+     , ('1.0')
+     , ('["OFF", "ON"]')
+     , ('["LOW", "MED", "HI"]')
 ;
 
 INSERT INTO value_units (measurement, unit)
@@ -42,7 +44,7 @@ VALUES ('temperature', 'fahrenheit')
 
 INSERT INTO points (point_id, name, device_id, value_type_id, value_unit_id, description)
 VALUES (1, 'CMC.328.RT', 1, 2, 1, 'Room Temp in CMC 328')
-     , (2, 'CMC.328.SP', 1, 2, 1, 'Thermostat Set Point in CMC 328')
+     , (2, 'CMC.328.SP', 1, 4, 1, 'Thermostat Set Point in CMC 328')
      , (5, 'CMC.102.SP', 4, 2, 1, 'Thermostat Set Point in CMC 102')
      , (3, 'EV.RM107.RT', 3, 2, 1, 'Room Temp in Evans 107')
      , (4, 'EV.RM107.SP', 3, 3, 1, 'Thermostat Set Point in Evans 107')
@@ -104,4 +106,5 @@ INSERT INTO values (point_id, timestamp, int, double)
 VALUES (1, 2, 6, NULL)
      , (4, 5, NULL, 9.8)
      , (3, 13, 10, NULL)
+     , (2, 35, 1, NULL)
 ;

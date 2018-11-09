@@ -79,9 +79,27 @@ def query_single_cell(query, vars=None):
     with CONN.cursor() as curs:
         curs.execute(query, vars)
         result = curs.fetchall()
+        if len(result) == 0:
+            return None
         assert len(result) == 1
         assert len(result[0]) == 1
         return result[0][0]
+
+
+def query_single_row(query, vars=None):
+    """ Takes a SQL query whose result is a single row, and returns the values in that row.
+
+    :param query: The SQL query
+    :param vars: Any values that need to be injected into the SQL query
+    :return: The value of the single row of the result of the query
+    """
+    with CONN.cursor() as curs:
+        curs.execute(query, vars)
+        result = curs.fetchall()
+        if len(result) == 0:
+            return None
+        assert len(result) == 1
+        return result[0]
 
 
 def insert(query, vars=None):
@@ -106,9 +124,8 @@ class Points:
             buildings.building_id,
             buildings.name AS building_name,
             (SELECT row_to_json(a) 
-                FROM (SELECT value_type_id, storage_kind, enums.cases
+                FROM (SELECT value_type_id, type
                       FROM value_types
-                            LEFT JOIN enums ON value_types.enum_id = enums.enum_id
                       WHERE value_types.value_type_id = points.value_type_id
             ) a) AS value_type,
             (SELECT row_to_json(a) 
@@ -182,17 +199,6 @@ class Points:
                 LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
             """
         return query_single_column(base_query + where_clause)
-
-    @staticmethod
-    def value_is_double(name):
-        """Returns true if the storage_kind of the point with the given id is a double."""
-        storage_kind = query_single_cell("""
-            SELECT storage_kind
-            FROM value_types
-                INNER JOIN points ON value_types.value_type_id = points.value_type_id
-            WHERE points.name = %s
-            ;""", (name,))
-        return storage_kind == 'double'
 
 
 class Devices:
@@ -416,15 +422,28 @@ class Values:
         :param timestamp: The UNIX Epoch time when this value was recorded
         :param value: The value that was recorded
         """
-        value_is_double = Points.value_is_double(point_name)
-        if value_is_double:
-            insert("""
-            INSERT INTO values (point_id, timestamp, double) VALUES ((SELECT point_id FROM points WHERE name = %s), %s, %s);
+
+        value_type = query_single_cell("""
+                    SELECT type
+                    FROM value_types
+                        INNER JOIN points ON value_types.value_type_id = points.value_type_id
+                    WHERE points.name = %s
+                    ;""", (point_name,))
+
+        if type(value_type) is float:
+                insert("""
+            INSERT INTO values (point_id, timestamp, double) VALUES (%s, %s, %s);
             """, (point_name, timestamp, value))
-        else:
+        elif type(value_type) is int or type(value_type) is bool:
             insert("""
             INSERT INTO values (point_id, timestamp, int) VALUES ((SELECT point_id FROM points WHERE name = %s), %s, %s);
             """, (point_name, timestamp, value))
+        elif type(value_type) is list:
+            insert("""
+            INSERT INTO values (point_id, timestamp, int) VALUES ((SELECT point_id FROM points WHERE name = %s), %s, %s);
+            """, (point_name, timestamp, value_type.index(value)))
+        else:
+            raise Exception("value_type.type is of unsupported type")
 
     @staticmethod
     def get(point_ids, start_time, end_time):

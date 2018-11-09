@@ -21,19 +21,9 @@ CREATE TABLE devices (
 )
 ;
 
-CREATE TABLE enums (
-  enum_id SERIAL PRIMARY KEY,
-  cases   JSONB
-)
-;
-
-CREATE TYPE VALUE_TYPE_STORAGE_KIND AS ENUM ('bool', 'int', 'double', 'enum')
-;
-
 CREATE TABLE value_types (
   value_type_id SERIAL PRIMARY KEY,
-  storage_kind  VALUE_TYPE_STORAGE_KIND NOT NULL,
-  enum_id       INT REFERENCES enums
+  type          JSONB NOT NULL
 )
 ;
 
