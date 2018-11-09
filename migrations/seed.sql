@@ -45,9 +45,9 @@ VALUES ('temperature', 'fahrenheit')
 INSERT INTO points (point_id, name, device_id, value_type_id, value_unit_id, description)
 VALUES (1, 'CMC.328.RT', 1, 2, 1, 'Room Temp in CMC 328')
      , (2, 'CMC.328.SP', 1, 4, 1, 'Thermostat Set Point in CMC 328')
-     , (5, 'CMC.102.SP', 4, 2, 1, 'Thermostat Set Point in CMC 102')
      , (3, 'EV.RM107.RT', 3, 2, 1, 'Room Temp in Evans 107')
      , (4, 'EV.RM107.SP', 3, 3, 1, 'Thermostat Set Point in Evans 107')
+     , (5, 'CMC.102.SP', 4, 2, 1, 'Thermostat Set Point in CMC 102')
 ;
 
 INSERT INTO categories (category_id, name)
