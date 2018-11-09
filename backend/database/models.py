@@ -1,4 +1,5 @@
 import os
+import sys
 import psycopg2
 from flask import jsonify
 
@@ -423,25 +424,31 @@ class Values:
         :param value: The value that was recorded
         """
 
-        value_type = query_single_cell("""
-                    SELECT type
+        result = query_single_row("""
+                    SELECT point_id, type
                     FROM value_types
                         INNER JOIN points ON value_types.value_type_id = points.value_type_id
                     WHERE points.name = %s
                     ;""", (point_name,))
 
+        if result is None:
+            print("The point", point_name, "doesn't exist", file=sys.stderr)
+            return
+
+        (point_id, value_type) = result
+
         if type(value_type) is float:
                 insert("""
             INSERT INTO values (point_id, timestamp, double) VALUES (%s, %s, %s);
-            """, (point_name, timestamp, value))
+            """, (point_id, timestamp, value))
         elif type(value_type) is int or type(value_type) is bool:
             insert("""
-            INSERT INTO values (point_id, timestamp, int) VALUES ((SELECT point_id FROM points WHERE name = %s), %s, %s);
-            """, (point_name, timestamp, value))
+            INSERT INTO values (point_id, timestamp, int) VALUES (%s, %s, %s);
+            """, (point_id, timestamp, value))
         elif type(value_type) is list:
             insert("""
-            INSERT INTO values (point_id, timestamp, int) VALUES ((SELECT point_id FROM points WHERE name = %s), %s, %s);
-            """, (point_name, timestamp, value_type.index(value)))
+            INSERT INTO values (point_id, timestamp, int) VALUES (%s, %s, %s);
+            """, (point_id, timestamp, value_type.index(value)))
         else:
             raise Exception("value_type.type is of unsupported type")
 
