@@ -419,7 +419,7 @@ class Values:
     def add(point_name, timestamp, value):
         """Adds a value to the database.
 
-        :param point_name: The point_id of the point from which this value was recorded
+        :param point_name: The point_name of the point from which this value was recorded
         :param timestamp: The UNIX Epoch time when this value was recorded
         :param value: The value that was recorded
         """
