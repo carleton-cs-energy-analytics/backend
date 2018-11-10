@@ -88,8 +88,6 @@ def get_values():
 
 @api.route('/values', methods=['POST'])
 def post_values():
-    values = request.get_json()
-    for value in values:
-        Values.add(value[0], value[1], value[2])
+    Values.add(request.get_json())
 
     return "Success"

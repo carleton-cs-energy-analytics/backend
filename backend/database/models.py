@@ -103,14 +103,18 @@ def query_single_row(query, vars=None):
         return result[0]
 
 
-def insert(query, vars=None):
+def insert(query, items):
     """Runs the given query on the database, then commits the database connection.
 
     :param query: The SQL query
     :param vars: Any values that need to be injected into the SQL query
     """
     with CONN.cursor() as curs:
-        curs.execute(query, vars)
+        print(items)
+        print(curs.mogrify("(%s, %s, %s)", items[0]))
+        args_str = ','.join(curs.mogrify("(%s, %s, %s)",  item).decode("utf-8") for item in items)
+        print(args_str)
+        curs.execute(query + args_str + ";")
         CONN.commit()
 
 
@@ -416,7 +420,42 @@ class Categories:
 
 class Values:
     @staticmethod
-    def add(point_name, timestamp, value):
+    def _get_id_and_type(point_name):
+        return query_single_row("""
+                            SELECT point_id, type
+                            FROM value_types
+                                INNER JOIN points ON value_types.value_type_id = points.value_type_id
+                            WHERE points.name = %s
+                            ;""", (point_name,))
+
+    @staticmethod
+    def _prepare_add(values):
+        point_info = {}
+        int_values = []
+        float_values = []
+        for (point_name, timestamp, value) in values:
+            if point_name not in point_info:
+                point_info[point_name] = Values._get_id_and_type(point_name)
+
+            if point_info[point_name] is None:
+                # print("The point", point_name, "doesn't exist", file=sys.stderr)
+                continue
+
+            (point_id, value_type) = point_info[point_name]
+
+            if type(value_type) is float:
+                float_values.append((point_id, timestamp, value))
+            elif type(value_type) is int or type(value_type) is bool:
+                int_values.append((point_id, timestamp, value))
+            elif type(value_type) is list:
+                int_values.append((point_id, timestamp, value_type.index(value)))
+            else:
+                raise Exception("value_type.type is of unsupported type")
+
+        return int_values, float_values
+
+    @staticmethod
+    def add(values):
         """Adds a value to the database.
 
         :param point_name: The point_name of the point from which this value was recorded
@@ -424,33 +463,19 @@ class Values:
         :param value: The value that was recorded
         """
 
-        result = query_single_row("""
-                    SELECT point_id, type
-                    FROM value_types
-                        INNER JOIN points ON value_types.value_type_id = points.value_type_id
-                    WHERE points.name = %s
-                    ;""", (point_name,))
+        int_values, float_values = Values._prepare_add(values)
 
-        if result is None:
-            print("The point", point_name, "doesn't exist", file=sys.stderr)
-            return
+        print(tuple(float_values))
 
-        (point_id, value_type) = result
-
-        if type(value_type) is float:
-                insert("""
-            INSERT INTO values (point_id, timestamp, double) VALUES (%s, %s, %s);
-            """, (point_id, timestamp, value))
-        elif type(value_type) is int or type(value_type) is bool:
+        if len(float_values) > 0:
             insert("""
-            INSERT INTO values (point_id, timestamp, int) VALUES (%s, %s, %s);
-            """, (point_id, timestamp, value))
-        elif type(value_type) is list:
+                INSERT INTO values (point_id, timestamp, double) VALUES 
+                """, float_values)
+
+        if len(int_values) > 0:
             insert("""
-            INSERT INTO values (point_id, timestamp, int) VALUES (%s, %s, %s);
-            """, (point_id, timestamp, value_type.index(value)))
-        else:
-            raise Exception("value_type.type is of unsupported type")
+                INSERT INTO values (point_id, timestamp, int) VALUES 
+                """, int_values)
 
     @staticmethod
     def get(point_ids, start_time, end_time):

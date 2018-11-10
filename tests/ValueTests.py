@@ -18,7 +18,7 @@ class ValueTests(unittest.TestCase):
 
         self.remove_point_to_be_added(((3,), start_time, end_time))
 
-        Values.add(point_name, timestamp, value)
+        Values.add([(point_name, timestamp, value)])
         result = Values.get((3,), start_time, end_time)
 
         # silly fix because the value_id is changed each time the test is run
