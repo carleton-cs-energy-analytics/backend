@@ -1,12 +1,13 @@
 import unittest
-from backend.database.models import Values, insert
+from backend.database.models import Values, execute_and_commit
 
 
 class ValueTests(unittest.TestCase):
 
     @staticmethod
     def remove_point_to_be_added(attributes):
-        insert("DELETE FROM values WHERE point_id = %s AND timestamp = %s AND int = %s", attributes)
+        execute_and_commit("DELETE FROM values WHERE point_id = %s AND timestamp = %s AND int = %s",
+                           attributes)
 
     def test_get_add_single(self):
         point_name = ('EV.RM107.RT',)
@@ -29,7 +30,7 @@ class ValueTests(unittest.TestCase):
         self.remove_point_to_be_added(((3,), start_time, end_time))
 
     def test_add_enum(self):
-        Values.add('CMC.328.SP', 76, 'OFF')
+        Values.add([('CMC.328.SP', 76, 'OFF')])
         self.remove_point_to_be_added(((2,), 76, 0))
 
     def test_get_single(self):

@@ -103,18 +103,28 @@ def query_single_row(query, vars=None):
         return result[0]
 
 
-def insert(query, items):
+def insert_values(query, items):
+    """Used for inserting values into the database. Takes a query and a list of 3-tuples, appends
+    the 3-tuples to the query, and then executes and commits it.
+
+    :param query: The SQL query
+    :param items: A list of 3-tuples to be appended to the end of the query
+    """
+    with CONN.cursor() as curs:
+        # sanitizes (mogrify) the items, creating strings, and then joins them together with commas
+        args_str = ','.join(curs.mogrify("(%s, %s, %s)", item).decode("utf-8") for item in items)
+        curs.execute(query + args_str + ";")
+        CONN.commit()
+
+
+def execute_and_commit(query, vars):
     """Runs the given query on the database, then commits the database connection.
 
     :param query: The SQL query
     :param vars: Any values that need to be injected into the SQL query
     """
     with CONN.cursor() as curs:
-        print(items)
-        print(curs.mogrify("(%s, %s, %s)", items[0]))
-        args_str = ','.join(curs.mogrify("(%s, %s, %s)",  item).decode("utf-8") for item in items)
-        print(args_str)
-        curs.execute(query + args_str + ";")
+        curs.execute(query, vars)
         CONN.commit()
 
 
@@ -421,6 +431,12 @@ class Categories:
 class Values:
     @staticmethod
     def _get_id_and_type(point_name):
+        """Gets the point id and value type for a given point name.
+
+        :param point_name: The point name
+        :return: A tuple with the point id and value type for the point name or None if the point
+        does not exist in the database.
+        """
         return query_single_row("""
                             SELECT point_id, type
                             FROM value_types
@@ -430,19 +446,34 @@ class Values:
 
     @staticmethod
     def _prepare_add(values):
+        """Transforms value data in preparation for being added to the database. Takes a list of
+        tuples containing the point name, the timestamp, and the value as it appears in Siemens
+        reports, and outputs two lists, with tuples containing the point id, the timestamp, and the
+        value in the form in which it goes into the database.
+
+        :param values: A list of 3-tuples in the form `(point_name, timestamp, value)` where values
+        are ints, doubles, or enum strings.
+        :return: Two lists where the first one is a list of 3-tuples where the values to be inserted
+        into the database are ints and another one for doubles. The first value is now point ids
+        rather than names.
+        """
         point_info = {}
         int_values = []
         float_values = []
         for (point_name, timestamp, value) in values:
+            # Only want to get the point id and value type once for each point name
             if point_name not in point_info:
                 point_info[point_name] = Values._get_id_and_type(point_name)
+                if point_info[point_name] is None:
+                    print("The point", point_name, "doesn't exist", file=sys.stderr)
 
+            # Don't want to add values where the point is not in the database
             if point_info[point_name] is None:
-                # print("The point", point_name, "doesn't exist", file=sys.stderr)
                 continue
 
             (point_id, value_type) = point_info[point_name]
 
+            # Appends the transformed 3-tuple to the relevant list
             if type(value_type) is float:
                 float_values.append((point_id, timestamp, value))
             elif type(value_type) is int or type(value_type) is bool:
@@ -456,24 +487,22 @@ class Values:
 
     @staticmethod
     def add(values):
-        """Adds a value to the database.
+        """Adds a list of values to the database.
 
-        :param point_name: The point_name of the point from which this value was recorded
-        :param timestamp: The UNIX Epoch time when this value was recorded
-        :param value: The value that was recorded
+        :param values: A list of 3-tuples in the form `(point_name, timestamp, value)` where values
+        are ints, doubles, or enum strings.
         """
 
         int_values, float_values = Values._prepare_add(values)
 
-        print(tuple(float_values))
-
+        # Only want to insert values if there are values to be inserted for the particular type
         if len(float_values) > 0:
-            insert("""
+            insert_values("""
                 INSERT INTO values (point_id, timestamp, double) VALUES 
                 """, float_values)
 
         if len(int_values) > 0:
-            insert("""
+            insert_values("""
                 INSERT INTO values (point_id, timestamp, int) VALUES 
                 """, int_values)
 
