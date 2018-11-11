@@ -1,7 +1,6 @@
 import os
 import sys
 import psycopg2
-from flask import jsonify
 
 CONN = psycopg2.connect(dbname=os.environ.get('DATABASE_NAME') or 'energy-dev',
                         user=os.environ.get('DATABASE_USER') or '',
