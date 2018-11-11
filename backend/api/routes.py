@@ -1,6 +1,7 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, abort
 from backend.database.models import *
 from backend.database.Search import Search
+from backend.database.exceptions import *
 
 api = Blueprint('api', __name__)
 
@@ -8,7 +9,10 @@ api = Blueprint('api', __name__)
 @api.route('/points')
 def get_points():
     if request.args.get('search'):
-        Points.where(Search.points(request.args.get('search')))
+        try:
+            return Points.where(Search.points(request.args.get('search')))
+        except InvalidSearchException as e:
+            abort(400, e)
     else:
         return Points.all()
 
@@ -21,7 +25,10 @@ def get_point_by_id(id):
 @api.route('/devices')
 def get_devices():
     if request.args.get('search'):
-        Devices.where(Search.devices(request.args.get('search')))
+        try:
+            return Devices.where(Search.devices(request.args.get('search')))
+        except InvalidSearchException as e:
+            abort(400, e)
     else:
         return Devices.all()
 
@@ -34,7 +41,10 @@ def get_device_by_id(id):
 @api.route('/rooms')
 def get_rooms():
     if request.args.get('search'):
-        Rooms.where(Search.rooms(request.args.get('search')))
+        try:
+            return Rooms.where(Search.rooms(request.args.get('search')))
+        except InvalidSearchException as e:
+            abort(400, e)
     else:
         return Rooms.all()
 
@@ -47,7 +57,10 @@ def get_room(id):
 @api.route('/buildings')
 def get_buildings():
     if request.args.get('search'):
-        return Buildings.where(Search.buildings(request.args.get('search')))
+        try:
+            return Buildings.where(Search.buildings(request.args.get('search')))
+        except InvalidSearchException as e:
+            abort(400, e)
     else:
         return Buildings.all()
 

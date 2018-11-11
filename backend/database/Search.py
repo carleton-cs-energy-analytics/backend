@@ -1,5 +1,5 @@
 import re
-from backend.database.models import query_single_column
+from backend.database.exceptions import InvalidSearchException
 
 
 class Search:
@@ -77,7 +77,7 @@ class Search:
         regex = re.compile("^([@#$%*]\\d+|and|or|not|:(floor|type|unit|measurement) (([<>=]|!=|<=|>=)? ?(\\d+)|(\'\\w+\'))|\\(|\\)|\\s+)+$")
 
         if regex.match(source_string) is None:
-            raise Exception("Invalid source string for points.")
+            raise InvalidSearchException("Invalid source string for points.")
 
         return Search.parse(source_string, 'point')
 
@@ -90,7 +90,7 @@ class Search:
         regex = re.compile("^([@#$%]\\d+|and|or|not|:(floor) (([<>=]|!=|<=|>=)? ?(\\d+))|\\(|\\)|\\s+)+$")
 
         if regex.match(source_string) is None:
-            raise Exception("Invalid source string for devices.")
+            raise InvalidSearchException("Invalid source string for devices.")
 
         return Search.parse(source_string, 'device')
 
@@ -103,7 +103,7 @@ class Search:
         regex = re.compile("^([@#$]\\d+|and|or|not|:(floor) (([<>=]|!=|<=|>=)? ?(\\d+))|\\(|\\)|\\s+)+$")
 
         if regex.match(source_string) is None:
-            raise Exception("Invalid source string for rooms.")
+            raise InvalidSearchException("Invalid source string for rooms.")
 
         return Search.parse(source_string, 'room')
 
@@ -116,6 +116,6 @@ class Search:
         regex = re.compile("^([@#]\\d+|and|or|not|\\(|\\)|\\s+)+$")
 
         if regex.match(source_string) is None:
-            raise Exception("Invalid source string for buildings.")
+            raise InvalidSearchException("Invalid source string for buildings.")
 
         return Search.parse(source_string, 'building')
