@@ -57,27 +57,27 @@ class PointSearchTests(unittest.TestCase):
                          string_beginning + " value_units.measurement = 'temperature'")
 
     def test_building_room(self):
-        self.assertEquals(Search.points("@3 and $7"),
+        self.assertEqual(Search.points("@3 and $7"),
                           string_beginning + " buildings.building_id = 3 AND rooms.room_id = 7")
 
     def test_device_point(self):
-        self.assertEquals(Search.points("%310 or *78"),
+        self.assertEqual(Search.points("%310 or *78"),
                           string_beginning + " devices.device_id = 310 OR points.point_id = 78")
 
     def test_building_room_device_point(self):
-        self.assertEquals(Search.points("*1 and %6 and @3 and $2"),
+        self.assertEqual(Search.points("*1 and %6 and @3 and $2"),
                           string_beginning + " points.point_id = 1 AND devices.device_id = 6 AND buildings.building_id = 3 AND rooms.room_id = 2")
 
     def test_parenthesis_building_room_device_point(self):
-        self.assertEquals(Search.points("*1 and (%6 or @3) and $2"),
+        self.assertEqual(Search.points("*1 and (%6 or @3) and $2"),
                           string_beginning + " points.point_id = 1 AND( devices.device_id = 6 OR buildings.building_id = 3) AND rooms.room_id = 2")
 
     def test_nested_parenthesis_building_room_device_point(self):
-        self.assertEquals(Search.points("(*1 and (%6 or @3)) or $2"),
+        self.assertEqual(Search.points("(*1 and (%6 or @3)) or $2"),
                           string_beginning + "( points.point_id = 1 AND( devices.device_id = 6 OR buildings.building_id = 3)) OR rooms.room_id = 2")
 
     def test_building_floor(self):
-        self.assertEquals(Search.points("@3 and :floor > 2"),
+        self.assertEqual(Search.points("@3 and :floor > 2"),
                           string_beginning + " buildings.building_id = 3 AND rooms.floor > 2")
 
     # The following tests also test models.py

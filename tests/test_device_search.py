@@ -53,26 +53,26 @@ class DeviceSearchTests(unittest.TestCase):
         with self.assertRaises(Exception): Search.devices(":measurement 'temperature'")
 
     def test_building_room(self):
-        self.assertEquals(Search.devices("@3 and $7"),
+        self.assertEqual(Search.devices("@3 and $7"),
                           string_beginning + " buildings.building_id = 3 AND rooms.room_id = 7")
 
     def test_device_point(self):
         with self.assertRaises(Exception): Search.devices("%310 or *78")
 
     def test_building_room_device(self):
-        self.assertEquals(Search.devices("%6 and @3 and $2"),
+        self.assertEqual(Search.devices("%6 and @3 and $2"),
                           string_beginning + " devices.device_id = 6 AND buildings.building_id = 3 AND rooms.room_id = 2")
 
     def test_parenthesis_building_room_device(self):
-        self.assertEquals(Search.devices("(%6 or @3) and $2"),
+        self.assertEqual(Search.devices("(%6 or @3) and $2"),
                           string_beginning + "( devices.device_id = 6 OR buildings.building_id = 3) AND rooms.room_id = 2")
 
     def test_nested_parenthesis_building_room_device(self):
-        self.assertEquals(Search.devices("%6 or (@3 or $2)"),
+        self.assertEqual(Search.devices("%6 or (@3 or $2)"),
                           string_beginning + " devices.device_id = 6 OR( buildings.building_id = 3 OR rooms.room_id = 2)")
 
     def test_building_floor(self):
-        self.assertEquals(Search.devices("@3 and :floor > 2"),
+        self.assertEqual(Search.devices("@3 and :floor > 2"),
                           string_beginning + " buildings.building_id = 3 AND rooms.floor > 2")
 
     # The following tests also test models.py

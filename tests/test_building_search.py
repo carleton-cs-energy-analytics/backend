@@ -55,7 +55,7 @@ class BuildingSearchTests(unittest.TestCase):
         with self.assertRaises(Exception): Search.buildings("%310 or *78")
 
     def test_building_tag(self):
-        self.assertEquals(Search.buildings("@3 and #2"),
+        self.assertEqual(Search.buildings("@3 and #2"),
                           string_beginning + " buildings.building_id = 3 AND buildings_tags.tag_id = 2")
 
     # The following tests also test models.py

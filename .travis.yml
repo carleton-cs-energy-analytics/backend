@@ -1,9 +1,9 @@
 language: python
 python:
-  - 3.6
+- 3.6
 
 services:
-  - postgresql
+- postgresql
 addons:
   postgresql: "10"
   apt:
@@ -15,9 +15,10 @@ env:
   - PGPORT=5433
 
 before_script:
-  - ./reseed.sh
+- ./reseed.sh
 
 install:
-  - make init
+- pip install pipenv
+- pipenv install
 script:
-  - make test
+- pipenv run python3 -m unittest discover
