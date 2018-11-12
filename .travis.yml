@@ -2,10 +2,10 @@ language: python
 python:
   - 3.6
 
-
 services:
   - postgresql
-
+addons:
+  postgresql: "10"
 before_script:
   - ./reseed.sh
 
