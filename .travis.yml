@@ -1,0 +1,24 @@
+language: python
+python:
+- 3.6
+
+services:
+- postgresql
+addons:
+  postgresql: "10"
+  apt:
+    packages:
+    - postgresql-10
+    - postgresql-client-10
+env:
+  global:
+  - PGPORT=5433
+
+before_script:
+- ./reseed.sh
+
+install:
+- pip install pipenv
+- pipenv install
+script:
+- pipenv run python3 -m unittest discover

@@ -1,0 +1,2 @@
+class InvalidSearchException(Exception):
+    pass
