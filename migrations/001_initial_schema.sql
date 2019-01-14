@@ -60,25 +60,29 @@ CREATE TABLE tags (
 
 CREATE TABLE buildings_tags (
   building_id INT NOT NULL REFERENCES buildings,
-  tag_id      INT NOT NULL REFERENCES tags
+  tag_id      INT NOT NULL REFERENCES tags,
+  UNIQUE (building_id, tag_id)
 )
 ;
 
 CREATE TABLE rooms_tags (
   room_id INT NOT NULL REFERENCES rooms,
-  tag_id  INT NOT NULL REFERENCES tags
+  tag_id  INT NOT NULL REFERENCES tags,
+  UNIQUE (room_id, tag_id)
 )
 ;
 
 CREATE TABLE devices_tags (
   device_id INT NOT NULL REFERENCES devices,
-  tag_id    INT NOT NULL REFERENCES tags
+  tag_id    INT NOT NULL REFERENCES tags,
+  UNIQUE (device_id, tag_id)
 )
 ;
 
 CREATE TABLE points_tags (
   point_id INT NOT NULL REFERENCES points,
-  tag_id   INT NOT NULL REFERENCES tags
+  tag_id   INT NOT NULL REFERENCES tags,
+  UNIQUE (point_id, tag_id)
 )
 ;
 
