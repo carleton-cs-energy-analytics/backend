@@ -23,6 +23,7 @@ CREATE TABLE devices (
 
 CREATE TABLE value_types (
   value_type_id SERIAL PRIMARY KEY,
+  label         VARCHAR(255),
   type          JSONB NOT NULL
 )
 ;
@@ -38,7 +39,7 @@ CREATE TABLE points (
   point_id      SERIAL PRIMARY KEY,
   name          VARCHAR(255) NOT NULL UNIQUE,
   device_id     INT          NOT NULL REFERENCES devices,
-  value_type_id INT          NOT NULL REFERENCES value_types,
+  value_type_id INT REFERENCES value_types,
   value_unit_id INT REFERENCES value_units,
   description   TEXT
 )
