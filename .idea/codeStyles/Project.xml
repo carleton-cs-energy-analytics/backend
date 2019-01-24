@@ -2,17 +2,10 @@
   <code_scheme name="Project" version="173">
     <option name="RIGHT_MARGIN" value="100" />
     <SqlCodeStyleSettings version="1">
-      <option name="myVersion" value="1" />
       <option name="ALIAS_CASE" value="4" />
       <option name="KEYWORD_CASE" value="0" />
       <option name="TYPE_CASE" value="3" />
       <option name="IDENTIFIER_CASE" value="1" />
-      <option name="TABLE_OPENING" value="1" />
-      <option name="TABLE_CONTENT" value="2" />
-      <option name="TABLE_CLOSING" value="3" />
-      <option name="POST_OPT_WRAP_1" value="true" />
-      <option name="IMP_DECLARE_EL_WRAP" value="1" />
-      <option name="IMP_IF_THEN_WRAP_THEN" value="true" />
       <option name="CORTEGE_COMMA_1ST" value="true" />
       <option name="CORTEGE_CLOSING" value="1" />
       <option name="EXPR_CASE_THEN_ALIGN" value="true" />
