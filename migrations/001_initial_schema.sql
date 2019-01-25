@@ -8,7 +8,7 @@ CREATE TABLE rooms (
   room_id     SERIAL PRIMARY KEY,
   name        VARCHAR(32) NOT NULL UNIQUE,
   building_id INT         NOT NULL REFERENCES buildings,
-  floor       INT         NOT NULL,
+  floor       INT,
   description TEXT
 )
 ;
@@ -23,7 +23,7 @@ CREATE TABLE devices (
 
 CREATE TABLE value_types (
   value_type_id SERIAL PRIMARY KEY,
-  label         VARCHAR(255),
+  name          VARCHAR(255),
   type          JSONB NOT NULL
 )
 ;
@@ -31,7 +31,8 @@ CREATE TABLE value_types (
 CREATE TABLE value_units (
   value_unit_id SERIAL PRIMARY KEY,
   measurement   VARCHAR(255) NOT NULL,
-  unit          VARCHAR(255) NOT NULL
+  unit          VARCHAR(255) NOT NULL,
+  UNIQUE (measurement, unit)
 )
 ;
 
