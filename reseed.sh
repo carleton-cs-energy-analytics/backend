@@ -2,5 +2,5 @@
 
 dropdb energy-dev; \
 createdb energy-dev && \
-psql energy-dev -f ./migrations/001_initial_schema.sql && \
-psql energy-dev -f ./migrations/real_seed.sql
+psql energy-dev -f ./migrations/schema.sql && \
+psql energy-dev -f ./migrations/seed.sql
