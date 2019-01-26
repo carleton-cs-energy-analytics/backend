@@ -466,6 +466,8 @@ class Values:
                 point_info[point_name] = Values._get_id_and_type(point_name)
                 if point_info[point_name] is None:
                     print("The point", point_name, "doesn't exist", file=sys.stderr)
+                    # This line is here, rather than 4 lines down to avoid repeat printouts
+                    # TODO: Consider throwing an error instead.
 
             # Don't want to add values where the point is not in the database
             if point_info[point_name] is None:
