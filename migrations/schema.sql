@@ -6,24 +6,26 @@ CREATE TABLE buildings (
 
 CREATE TABLE rooms (
   room_id     SERIAL PRIMARY KEY,
-  name        VARCHAR(32) NOT NULL UNIQUE,
-  building_id INT         NOT NULL REFERENCES buildings,
+  name        VARCHAR(32) NOT NULL,
+  building_id INT NOT NULL REFERENCES buildings,
   floor       INT,
-  description TEXT
+  description TEXT,
+  UNIQUE (name, building_id)
 )
 ;
 
 CREATE TABLE devices (
   device_id   SERIAL PRIMARY KEY,
-  name        VARCHAR(255),
+  name        VARCHAR(255) NOT NULL,
   room_id     INT NOT NULL REFERENCES rooms,
-  description TEXT
+  description TEXT,
+  UNIQUE (name, room_id)
 )
 ;
 
 CREATE TABLE value_types (
   value_type_id SERIAL PRIMARY KEY,
-  name          VARCHAR(255),
+  name          VARCHAR(255) NOT NULL UNIQUE,
   type          JSONB NOT NULL
 )
 ;
