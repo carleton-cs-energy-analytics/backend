@@ -6,6 +6,7 @@ CONN = psycopg2.connect(host=os.environ.get('DATABASE_HOST') or '',
                         dbname=os.environ.get('DATABASE_NAME') or 'energy-dev',
                         user=os.environ.get('DATABASE_USER') or '',
                         password=os.environ.get('DATABASE_PASSWORD') or '')
+CONN.autocommit = True
 
 
 def unwrap_tuple(tuples):
