@@ -1,0 +1,13 @@
+DROP TABLE  values;
+DROP TABLE points_tags;
+DROP TABLE devices_tags;
+DROP TABLE rooms_tags;
+DROP TABLE buildings_tags;
+DROP TABLE tags;
+DROP TABLE categories;
+DROP TABLE points;
+DROP TABLE value_units;
+DROP TABLE value_types;
+DROP TABLE devices;
+DROP TABLE rooms;
+DROP TABLE buildings;
