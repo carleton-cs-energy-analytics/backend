@@ -49,6 +49,7 @@ PARSER_REGEX = re.compile(
     "("
     "[@#$%*]\\d+|"
     ":(\\w+) (([<>=] |[<>!]= )?(\\d+)|\'\\w+\')|"
+    "~([<>=]|[<>!]=) ([+-]?[0-9]+)|"
     "and|or|not|\\(|\\)"
     ")"
 )
@@ -66,7 +67,7 @@ class Search:
         """
         sql_string = " WHERE "
 
-        # @ -> buildings, # -> tags, $ -> rooms, % -> devices, * -> points
+        # @ -> buildings, # -> tags, $ -> rooms, % -> devices, * -> points, ~ -> values
         # TODO: think harder about the name token
         for token in PARSER_REGEX.findall(source_string):
             token = token[0]
@@ -167,16 +168,12 @@ class Search:
 
     @staticmethod
     def values(source_string):
+        """ Uses the given search string to generate a SQL WHERE-clause to be used in a query for
+        values.
         """
-        Numeric Ops: < <= > >= = !=
-        String Ops: just equality?
-        Boolean Ops:
-        :param source_string:
-        :return:
-        """
-        if not (VALUES_INT_REGEX.match(source_string) is None) ^ \
-                (VALUES_FLOAT_REGEX.match(source_string) is None):
-            # Exclusive Or; Exactly one of the patterns should match
+        if not ((VALUES_INT_REGEX.match(source_string) is None) ^
+                (VALUES_FLOAT_REGEX.match(source_string) is None)):
+            # Exclusive Or; Exactly one of the patterns should match. Otherwise, error.
             raise InvalidSearchException("Invalid source string for values.")
 
         return Search.parse(source_string, '')
