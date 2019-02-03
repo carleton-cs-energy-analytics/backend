@@ -15,7 +15,7 @@ VALUES (1, '328', 1, 3, 'Fishbowl')
      , (5, '113', 6, 1, 'Sayles Great Space')
 ;
 
-INSERT INTO devices (device_id, room_id, description)
+INSERT INTO devices (device_id, room_id, name)
 VALUES (1, 1, 'Fishbowl thermostat')
      , (2, 1, 'Fishbowl vav')
      , (3, 4, 'Thermostat in Evans 107')

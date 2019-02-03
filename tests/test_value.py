@@ -36,11 +36,11 @@ class ValueTests(unittest.TestCase):
         self.remove_int_point_to_be_added(((3,), timestamp, value))
 
     def test_add_enum(self):
-        Values.add([('CMC.328.SP', 76, 'OFF')])
+        Values.add([('CMC.328.SP', 76, 'NRML')])
         self.remove_int_point_to_be_added(((2,), 76, 0))
 
     def test_add_many(self):
-        Values.add([('CMC.328.SP', 90, 'ON'), ('EV.RM107.RT', 3, 8), ('EV.RM107.SP', 65, 77.8)])
+        Values.add([('CMC.328.SP', 90, 'FAULT'), ('EV.RM107.RT', 3, 8), ('EV.RM107.SP', 65, 77.8)])
         self.remove_int_point_to_be_added(((2,), 90, 1))
         self.remove_int_point_to_be_added(((3,), 3, 8))
         self.remove_double_point_to_be_added(((4,), 65, 77.8))
@@ -57,7 +57,7 @@ class ValueTests(unittest.TestCase):
 
     def test_get_enum(self):
         self.assertEqual(Values.get((2,), 0, 36),
-                         """[{"value_id":4,"point_name":"CMC.328.SP","timestamp":35,"value":"ON"}]""")
+                         """[{"value_id":4,"point_name":"CMC.328.SP","timestamp":35,"value":"FAULT"}]""")
 
 
 if __name__ == '__main__':
