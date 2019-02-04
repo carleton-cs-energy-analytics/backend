@@ -96,7 +96,9 @@ def get_values():
     start_time = request.args.get('start_time')
     end_time = request.args.get('end_time')
 
-    return Values.get(tuple(point_ids), start_time, end_time)
+    search = request.args.get('search') or 'TRUE'
+
+    return Values.get(tuple(point_ids), start_time, end_time, search)
 
 
 @api.route('/values', methods=['POST'])
@@ -104,3 +106,24 @@ def post_values():
     Values.add(request.get_json())
 
     return "Success"
+
+
+@api.route('/points/verify')
+def search_verify():
+    if request.args.get("search") is None:
+        abort(400, "Request must include a `search` argument")
+    try:
+        return Points.counts_where(Search.points(request.args.get("search")))
+    except InvalidSearchException as e:
+        return "Invalid Point Search: " + str(e)  # TODO: Is this the right way to return the error?
+
+
+@api.route('/values/verify')
+def values_verify():
+    if request.args.get("search") is None:
+        abort(400, "Request must include a `search` argument")
+    try:
+        Search.values(request.args.get("search"))
+    except InvalidSearchException as e:
+        return "Invalid Value Search: " + str(e)
+    return "Valid"

@@ -216,6 +216,24 @@ class Points:
             """
         return query_single_column(base_query + where_clause)
 
+    @staticmethod
+    def counts_where(where_clause):
+        """Returns a list of the ids of all Points which match the given WHERE-clause."""
+        base_query = """
+            SELECT points.value_type_id, COUNT(DISTINCT points.point_id)
+            FROM points
+                   LEFT JOIN devices ON points.device_id = devices.device_id
+                   LEFT JOIN rooms ON devices.room_id = rooms.room_id
+                   LEFT JOIN buildings ON rooms.building_id = buildings.building_id
+                   LEFT JOIN value_units ON points.value_unit_id = value_units.value_unit_id
+                   LEFT JOIN points_tags ON points.point_id = points_tags.point_id
+                   LEFT JOIN devices_tags ON devices.device_id = devices_tags.device_id
+                   LEFT JOIN rooms_tags ON rooms.room_id = rooms_tags.room_id
+                   LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
+            GROUP BY points.value_type_id
+            """
+        return query_json_array(base_query + where_clause)
+
 
 class Devices:
     sql_query = """
@@ -510,7 +528,7 @@ class Values:
                 """, int_values)
 
     @staticmethod
-    def get(point_ids, start_time, end_time):
+    def get(point_ids, start_time, end_time, where_clause='TRUE'):
         """Returns JSON-encoded array of values which match the given parameters.
 
         :param point_ids: A list of the IDs of the points whose values should be included
@@ -518,12 +536,13 @@ class Values:
         included, inclusive
         :param end_time: The UNIX Epoch time which marks the end of the range to be
         included, inclusive
+        :param where_clause: Additional restrictions to add to the WHERE clause
         :return: A JSON-encoded array of Values.
         """
         if len(point_ids) == 0:
             return "[]"
         return query_json_array("""
-            SELECT value_id, points.name AS point_name, timestamp, '[false,true]'::jsonb->int::INT AS value
+            SELECT value_id, points.name AS point_name, timestamp, '[false,true]'::JSONB->int::INT AS value
             FROM values
                    LEFT JOIN points ON values.point_id = points.point_id
                    LEFT JOIN value_types ON points.value_type_id = value_types.value_type_id
@@ -532,6 +551,7 @@ class Values:
               AND values.point_id IN %s
               AND %s <= timestamp
               AND timestamp <= %s
+              AND (%s)
             UNION ALL
             SELECT value_id, points.name AS point_name, timestamp, to_jsonb(int) AS value
             FROM values
@@ -542,6 +562,7 @@ class Values:
               AND values.point_id IN %s
               AND %s <= timestamp
               AND timestamp <= %s
+              AND (%s)
             UNION ALL
             SELECT value_id, points.name AS point_name, timestamp, (type->values.int::INT) AS value
             FROM values
@@ -552,6 +573,7 @@ class Values:
               AND values.point_id IN %s
               AND %s <= timestamp
               AND timestamp <= %s
+              AND (%s)
             UNION ALL
             SELECT value_id, points.name AS point_name, timestamp, to_jsonb(double) AS value
             FROM values
@@ -560,9 +582,10 @@ class Values:
               AND values.point_id IN %s
               AND %s <= timestamp
               AND timestamp <= %s
-            
+              AND (%s)
             """, (
-            point_ids, start_time, end_time,
-            point_ids, start_time, end_time,
-            point_ids, start_time, end_time,
-            point_ids, start_time, end_time))
+            point_ids, start_time, end_time, where_clause,
+            point_ids, start_time, end_time, where_clause,
+            point_ids, start_time, end_time, where_clause,
+            point_ids, start_time, end_time, where_clause,
+        ))
