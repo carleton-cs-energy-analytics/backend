@@ -1,7 +1,19 @@
 INSERT INTO value_units (measurement, unit)
-VALUES ('temperature', 'fahrenheit')
-     , ('temperature', 'celsius')
-     , ('airflow', 'feet^3 minute^-1')
+VALUES ('temperature', 'degrees fahrenheit')
+     , ('proportion open', 'percent')
+     , ('volume', 'gallons')
+     , ('proportion closed', 'percent')
+     , ('humidity', 'percent')
+     , ('energy', 'kilowatt hours')
+     , ('mass', 'pounds')
+     , ('pounds per unit time', 'pounds per hour')
+     , ('frequency', 'hertz')
+     , ('volume per unit time', 'gallons per minute')
+     , ('pressure', 'pounds per square inch')
+     , ('pressure differential', 'pounds per square inch')
+     , ('volume per unit time', 'cubic feet per minute')
+     , ('area', 'square feet')
+     , ('power', 'horsepower')
 ;
 
 -- The values below are the first pass at figuring out all the
