@@ -13,9 +13,11 @@ addons:
 env:
   global:
   - PGPORT=5433
+  - DATABASE_NAME=energy-test
 
 before_script:
-- ./reseed.sh
+- createdb energy-test
+- ./test-db-reseed.sh
 
 install:
 - pip install pipenv
