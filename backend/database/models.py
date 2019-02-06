@@ -214,7 +214,7 @@ class Points:
                 LEFT JOIN rooms_tags ON rooms.room_id = rooms_tags.room_id
                 LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
             """
-        return query_single_column(base_query + where_clause)
+        return query_single_column(base_query + " WHERE (" + where_clause + ")")
 
     @staticmethod
     def counts_where(where_clause):
@@ -232,7 +232,7 @@ class Points:
                    LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
             GROUP BY points.value_type_id
             """
-        return query_json_array(base_query + where_clause)
+        return query_json_array(base_query + " WHERE (" + where_clause + ")")
 
 
 class Devices:
@@ -301,7 +301,7 @@ class Devices:
                         LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
             """
 
-        return query_single_column(base_query + where_clause)
+        return query_single_column(base_query + " WHERE (" + where_clause + ")")
 
 
 class Rooms:
@@ -361,7 +361,7 @@ class Rooms:
                     LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
         """
 
-        return query_single_column(base_query + where_clause)
+        return query_single_column(base_query + " WHERE (" + where_clause + ")")
 
 
 class Buildings:
@@ -408,7 +408,7 @@ class Buildings:
                 LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
         """
 
-        return query_single_column(base_query + where_clause)
+        return query_single_column(base_query + " WHERE (" + where_clause + ")")
 
 
 class Tags:
@@ -551,7 +551,7 @@ class Values:
               AND values.point_id IN %s
               AND %s <= timestamp
               AND timestamp <= %s
-              AND (%s)
+              AND (""" + where_clause + """)
             UNION ALL
             SELECT value_id, points.name AS point_name, timestamp, to_jsonb(int) AS value
             FROM values
@@ -562,7 +562,7 @@ class Values:
               AND values.point_id IN %s
               AND %s <= timestamp
               AND timestamp <= %s
-              AND (%s)
+              AND (""" + where_clause + """)
             UNION ALL
             SELECT value_id, points.name AS point_name, timestamp, (type->values.int::INT) AS value
             FROM values
@@ -573,7 +573,7 @@ class Values:
               AND values.point_id IN %s
               AND %s <= timestamp
               AND timestamp <= %s
-              AND (%s)
+              AND (""" + where_clause + """)
             UNION ALL
             SELECT value_id, points.name AS point_name, timestamp, to_jsonb(double) AS value
             FROM values
@@ -582,10 +582,10 @@ class Values:
               AND values.point_id IN %s
               AND %s <= timestamp
               AND timestamp <= %s
-              AND (%s)
+              AND (""" + where_clause + """)
             """, (
-            point_ids, start_time, end_time, where_clause,
-            point_ids, start_time, end_time, where_clause,
-            point_ids, start_time, end_time, where_clause,
-            point_ids, start_time, end_time, where_clause,
+            point_ids, start_time, end_time,
+            point_ids, start_time, end_time,
+            point_ids, start_time, end_time,
+            point_ids, start_time, end_time,
         ))

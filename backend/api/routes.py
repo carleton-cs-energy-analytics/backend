@@ -98,7 +98,7 @@ def get_values():
 
     search = request.args.get('search') or 'TRUE'
 
-    return Values.get(tuple(point_ids), start_time, end_time, search) or "[]"
+    return Values.get(tuple(point_ids), start_time, end_time, Search.values(search)) or "[]"
 
 
 @api.route('/values', methods=['POST'])

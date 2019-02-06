@@ -33,15 +33,9 @@ POINTS_REGEX = re.compile(
     "and|or|not|\\(|\\)|\\s+"
     ")+$")
 
-VALUES_FLOAT_REGEX = re.compile(
+VALUES_REGEX = re.compile(
     "^("
     "~([<>=]|[<>!]=) ([+-]?([0-9]*[.])?[0-9]+)|"
-    "and|or|not|\\(|\\)|\\s+"
-    ")+$")
-
-VALUES_INT_REGEX = re.compile(
-    "^("
-    "~([<>=]|[<>!]=) ([+-]?[0-9]+)|"
     "and|or|not|\\(|\\)|\\s+"
     ")+$")
 
@@ -65,7 +59,7 @@ class Search:
         'device', 'room' or 'building'
         :return: The generated SQL WHERE-clause
         """
-        sql_string = " WHERE "
+        sql_string = ""
 
         # @ -> buildings, # -> tags, $ -> rooms, % -> devices, * -> points, ~ -> values
         # TODO: think harder about the name token
@@ -171,9 +165,7 @@ class Search:
         """ Uses the given search string to generate a SQL WHERE-clause to be used in a query for
         values.
         """
-        if not ((VALUES_INT_REGEX.match(source_string) is None) ^
-                (VALUES_FLOAT_REGEX.match(source_string) is None)):
-            # Exclusive Or; Exactly one of the patterns should match. Otherwise, error.
+        if VALUES_REGEX.match(source_string) is None:
             raise InvalidSearchException("Invalid source string for values.")
 
         return Search.parse(source_string, '')
