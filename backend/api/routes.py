@@ -92,7 +92,7 @@ def get_tags_by_category_id(id):
 
 @api.route('/values', methods=['GET'])
 def get_values():
-    point_ids = request.args.getlist('point_ids')
+    point_ids = request.args.getlist('point_ids') or request.args.getlist('point_ids[]')
     start_time = request.args.get('start_time')
     end_time = request.args.get('end_time')
 
