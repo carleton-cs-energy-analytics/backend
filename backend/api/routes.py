@@ -114,8 +114,8 @@ def search_verify():
         abort(400, "Request must include a `search` argument")
     try:
         return Points.counts_where(Search.points(request.args.get("search"))) or "[]"
-    except InvalidSearchException as e:
-        return "Invalid Point Search: " + str(e)  # TODO: Is this the right way to return the error?
+    except psycopg2.Error as e:  # Any InvalidSearchException will be thrown and result in a 500.
+        return "Invalid Point Search: " + str(e.pgerror)
 
 
 @api.route('/values/verify')
@@ -124,6 +124,6 @@ def values_verify():
         abort(400, "Request must include a `search` argument")
     try:
         Search.values(request.args.get("search"))
-    except InvalidSearchException as e:
-        return "Invalid Value Search: " + str(e)
+    except psycopg2.Error as e:  # Any InvalidSearchException will be thrown and result in a 500.
+        return "Invalid Value Search: " + str(e.pgerror)
     return "Valid"
