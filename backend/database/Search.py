@@ -1,9 +1,55 @@
 import re
 from backend.database.exceptions import InvalidSearchException
 
+# Compiled ahead of time to improve performance.
+
+BUILDINGS_REGEX = re.compile(
+    "^("
+    "[@#]\\d+|"
+    "and|or|not|\\(|\\)|"
+    "\\s+"
+    ")+$")
+
+ROOMS_REGEX = re.compile(
+    "^("
+    "[@#$]\\d+|"
+    ":(floor) (([<>=] |[<>!]= )?(\\d+))|"
+    "and|or|not|\\(|\\)|"
+    "\\s+"
+    ")+$")
+
+DEVICES_REGEX = re.compile(
+    "^("
+    "[@#$%]\\d+|"
+    ":(floor) (([<>=] |[<>!]= )?(\\d+))|"
+    "and|or|not|\\(|\\)|"
+    "\\s+"
+    ")+$")
+
+POINTS_REGEX = re.compile(
+    "^("
+    "[@#$%*]\\d+|"
+    ":(floor|type|unit|measurement) (([<>=] |[<>!]= )?(\\d+)|\'\\w+\')|"
+    "and|or|not|\\(|\\)|\\s+"
+    ")+$")
+
+VALUES_REGEX = re.compile(
+    "^("
+    "~([<>=]|[<>!]=) ([+-]?([0-9]*[.])?[0-9]+)|"
+    "and|or|not|\\(|\\)|\\s+"
+    ")+$")
+
+PARSER_REGEX = re.compile(
+    "("
+    "[@#$%*]\\d+|"
+    ":(\\w+) (([<>=] |[<>!]= )?(\\d+)|\'\\w+\')|"
+    "~([<>=]|[<>!]=) ([+-]?[0-9]+)|"
+    "and|or|not|\\(|\\)"
+    ")"
+)
+
 
 class Search:
-
     @staticmethod
     def parse(source_string, search_type):
         """Generates a SQL WHERE-clause from the given search source string.
@@ -13,13 +59,11 @@ class Search:
         'device', 'room' or 'building'
         :return: The generated SQL WHERE-clause
         """
-        sql_string = " WHERE "
+        sql_string = ""
 
-        # @ -> buildings, # -> tags, $ -> rooms, % -> devices, * -> points
-        regex = re.compile(
-            "([@#$%*]\\d+|and|or|not|:(\\w+) (([<>=]|!=|<=|>=)? ?(\\d+)|(\'\\w+\'))|\\(|\\))")
+        # @ -> buildings, # -> tags, $ -> rooms, % -> devices, * -> points, ~ -> values
         # TODO: think harder about the name token
-        for token in regex.findall(source_string):
+        for token in PARSER_REGEX.findall(source_string):
             token = token[0]
             if re.match("@\\d+", token):
                 sql_string += " buildings.building_id = " + token[1:]
@@ -43,16 +87,16 @@ class Search:
                 sql_string += " devices.device_id = " + token[1:]
             elif re.match("\\*\\d+", token):
                 sql_string += " points.point_id = " + token[1:]
-            elif re.match(":floor ([<>=]|!=|<=|>=) (\\d+)", token):
-                matches = re.match(":floor ([<>=]|!=|<=|>=) (\\d+)", token).groups()
+            elif re.match(":floor ([<>=]|[<>!]=) \\d+", token):
+                matches = re.match(":floor ([<>=]|[<>!]=) (\\d+)", token).groups()
                 sql_string += " rooms.floor " + matches[0] + " " + matches[1]
-            elif re.match(":type (\\d+)", token):
+            elif re.match(":type \\d+", token):
                 matches = re.match(":type (\\d+)", token).groups()
                 sql_string += " points.value_type_id = " + matches[0]
-            elif re.match(":unit (\\d+)", token):
+            elif re.match(":unit \\d+", token):
                 matches = re.match(":unit (\\d+)", token).groups()
                 sql_string += " value_units.value_unit_id = " + matches[0]
-            elif re.match(":measurement (\'\\w+\')", token):
+            elif re.match(":measurement \'\\w+\'", token):
                 matches = re.match(":measurement (\'\\w+\')", token).groups()
                 sql_string += " value_units.measurement = " + matches[0]
             elif re.match("and", token):
@@ -61,10 +105,14 @@ class Search:
                 sql_string += " OR"
             elif re.match("not", token):
                 sql_string += " NOT"
-            elif re.match("\(", token):
+            elif re.match("\\(", token):
                 sql_string += "("
-            elif re.match("\)", token):
+            elif re.match("\\)", token):
                 sql_string += ")"
+            elif re.match("~([<>=]|[<>!]=) ([+-]?[0-9]+)", token):
+                sql_string += " int " + token[1:]
+            elif re.match("~([<>=]|[<>!]=) ([+-]?([0-9]*[.])?[0-9]+)", token):
+                sql_string += " double " + token[1:]
 
         return sql_string
 
@@ -74,9 +122,7 @@ class Search:
         points.
         """
         # @ -> buildings, # -> tags, $ -> rooms, % -> devices, * -> points
-        regex = re.compile("^([@#$%*]\\d+|and|or|not|:(floor|type|unit|measurement) (([<>=]|!=|<=|>=)? ?(\\d+)|(\'\\w+\'))|\\(|\\)|\\s+)+$")
-
-        if regex.match(source_string) is None:
+        if POINTS_REGEX.match(source_string) is None:
             raise InvalidSearchException("Invalid source string for points.")
 
         return Search.parse(source_string, 'point')
@@ -87,9 +133,7 @@ class Search:
         devices.
         """
         # @ -> buildings, # -> tags, $ -> rooms, % -> devices
-        regex = re.compile("^([@#$%]\\d+|and|or|not|:(floor) (([<>=]|!=|<=|>=)? ?(\\d+))|\\(|\\)|\\s+)+$")
-
-        if regex.match(source_string) is None:
+        if DEVICES_REGEX.match(source_string) is None:
             raise InvalidSearchException("Invalid source string for devices.")
 
         return Search.parse(source_string, 'device')
@@ -100,9 +144,7 @@ class Search:
         rooms.
         """
         # @ -> buildings, # -> tags, $ -> rooms
-        regex = re.compile("^([@#$]\\d+|and|or|not|:(floor) (([<>=]|!=|<=|>=)? ?(\\d+))|\\(|\\)|\\s+)+$")
-
-        if regex.match(source_string) is None:
+        if ROOMS_REGEX.match(source_string) is None:
             raise InvalidSearchException("Invalid source string for rooms.")
 
         return Search.parse(source_string, 'room')
@@ -113,9 +155,17 @@ class Search:
         buildings.
         """
         # @ -> buildings, # -> tags
-        regex = re.compile("^([@#]\\d+|and|or|not|\\(|\\)|\\s+)+$")
-
-        if regex.match(source_string) is None:
+        if BUILDINGS_REGEX.match(source_string) is None:
             raise InvalidSearchException("Invalid source string for buildings.")
 
         return Search.parse(source_string, 'building')
+
+    @staticmethod
+    def values(source_string):
+        """ Uses the given search string to generate a SQL WHERE-clause to be used in a query for
+        values.
+        """
+        if VALUES_REGEX.match(source_string) is None:
+            raise InvalidSearchException("Invalid source string for values.")
+
+        return Search.parse(source_string, '')

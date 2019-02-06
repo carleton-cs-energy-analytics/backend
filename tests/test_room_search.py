@@ -2,22 +2,18 @@ import unittest
 from backend.database.Search import Search
 from backend.database.models import Rooms
 
-string_beginning = " WHERE "
-
 
 class RoomSearchTests(unittest.TestCase):
 
     def test_simple_building(self):
-        self.assertEqual(Search.rooms("@12"),
-                         string_beginning + " buildings.building_id = 12")
+        self.assertEqual(Search.rooms("@12"), " buildings.building_id = 12")
 
     def test_simple_tag(self):
         self.assertEqual(Search.rooms("#1"),
-                         string_beginning + " (rooms_tags.tag_id = 1 OR buildings_tags.tag_id = 1)")
+                         " (rooms_tags.tag_id = 1 OR buildings_tags.tag_id = 1)")
 
     def test_simple_room(self):
-        self.assertEqual(Search.rooms("$12"),
-                         string_beginning + " rooms.room_id = 12")
+        self.assertEqual(Search.rooms("$12"), " rooms.room_id = 12")
 
     def test_simple_device(self):
         with self.assertRaises(Exception): Search.rooms("%12")
@@ -26,20 +22,16 @@ class RoomSearchTests(unittest.TestCase):
         with self.assertRaises(Exception): Search.rooms("*12")
 
     def test_simple_and(self):
-        self.assertEqual(Search.rooms("and"),
-                         string_beginning + " AND")
+        self.assertEqual(Search.rooms("and"), " AND")
 
     def test_simple_or(self):
-        self.assertEqual(Search.rooms("or"),
-                         string_beginning + " OR")
+        self.assertEqual(Search.rooms("or"), " OR")
 
     def test_simple_not(self):
-        self.assertEqual(Search.rooms("not"),
-                         string_beginning + " NOT")
+        self.assertEqual(Search.rooms("not"), " NOT")
 
     def test_simple_floor(self):
-        self.assertEqual(Search.rooms(":floor = 3"),
-                         string_beginning + " rooms.floor = 3")
+        self.assertEqual(Search.rooms(":floor = 3"), " rooms.floor = 3")
 
     def test_simple_type(self):
         with self.assertRaises(Exception): Search.rooms(":type 4")
@@ -52,26 +44,26 @@ class RoomSearchTests(unittest.TestCase):
 
     def test_building_room(self):
         self.assertEqual(Search.rooms("@3 and $7"),
-                          string_beginning + " buildings.building_id = 3 AND rooms.room_id = 7")
+                         " buildings.building_id = 3 AND rooms.room_id = 7")
 
     def test_device_point(self):
         with self.assertRaises(Exception): Search.rooms("%310 or *78")
 
     def test_building_room_device(self):
         self.assertEqual(Search.rooms("@3 and $2"),
-                          string_beginning + " buildings.building_id = 3 AND rooms.room_id = 2")
+                         " buildings.building_id = 3 AND rooms.room_id = 2")
 
     def test_parenthesis_building_room_device(self):
         self.assertEqual(Search.rooms("(:floor = 2 or @3) and $2"),
-                          string_beginning + "( rooms.floor = 2 OR buildings.building_id = 3) AND rooms.room_id = 2")
+                         "( rooms.floor = 2 OR buildings.building_id = 3) AND rooms.room_id = 2")
 
     def test_nested_parenthesis_building_room_device(self):
         self.assertEqual(Search.rooms(":floor = 2 or (@3 or $2)"),
-                          string_beginning + " rooms.floor = 2 OR( buildings.building_id = 3 OR rooms.room_id = 2)")
+                         " rooms.floor = 2 OR( buildings.building_id = 3 OR rooms.room_id = 2)")
 
     def test_building_floor(self):
         self.assertEqual(Search.rooms("@3 and :floor > 2"),
-                          string_beginning + " buildings.building_id = 3 AND rooms.floor > 2")
+                         " buildings.building_id = 3 AND rooms.floor > 2")
 
     # The following tests also test models.py
 
@@ -101,7 +93,8 @@ class RoomSearchTests(unittest.TestCase):
  {"room_id":5,"room_name":"113","building_id":6,"building_name":"Sayles","floor":1,"description":"Sayles Great Space","tags":[]}]""")
 
     def test_where_building(self):
-        self.assertEqual(Rooms.where(Search.rooms("@2")), """[{"room_id":4,"room_name":"107","building_id":2,"building_name":"Evans","floor":1,"description":null,"tags":["residential","residence","single"]}]""")
+        self.assertEqual(Rooms.where(Search.rooms("@2")),
+                         """[{"room_id":4,"room_name":"107","building_id":2,"building_name":"Evans","floor":1,"description":null,"tags":["residential","residence","single"]}]""")
 
     def test_where_building_floor(self):
         self.assertEqual(Rooms.where(Search.rooms("@1 and :floor > 2")), """[{"room_id":2,"room_name":"304","building_id":1,"building_name":"CMC","floor":3,"description":null,"tags":["math_stats","academic","computer_science"]}, 
@@ -119,7 +112,9 @@ class RoomSearchTests(unittest.TestCase):
         self.assertEqual(Rooms.where(Search.rooms("@1 and #2")), "[]")
 
     def test_where_tag_not_building(self):
-        self.assertEqual(Rooms.where(Search.rooms("#7 and not @1")), """[{"room_id":4,"room_name":"107","building_id":2,"building_name":"Evans","floor":1,"description":null,"tags":["residential","residence","single"]}]""")
+        self.assertEqual(Rooms.where(Search.rooms("#7 and not @1")),
+                         """[{"room_id":4,"room_name":"107","building_id":2,"building_name":"Evans","floor":1,"description":null,"tags":["residential","residence","single"]}]""")
+
 
 if __name__ == '__main__':
     unittest.main()
