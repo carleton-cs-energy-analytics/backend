@@ -121,6 +121,8 @@ class Search:
         """Uses the given search string to generate a SQL WHERE-clause to be used in a query for
         points.
         """
+        if source_string is None or len(source_string) == 0:
+            return "TRUE"
         # @ -> buildings, # -> tags, $ -> rooms, % -> devices, * -> points
         if POINTS_REGEX.match(source_string) is None:
             raise InvalidSearchException("Invalid source string for points.")
@@ -132,6 +134,8 @@ class Search:
         """Uses the given search string to generate a SQL WHERE-clause to be used in a query for
         devices.
         """
+        if source_string is None or len(source_string) == 0:
+            return "TRUE"
         # @ -> buildings, # -> tags, $ -> rooms, % -> devices
         if DEVICES_REGEX.match(source_string) is None:
             raise InvalidSearchException("Invalid source string for devices.")
@@ -143,6 +147,8 @@ class Search:
         """Uses the given search string to generate a SQL WHERE-clause to be used in a query for
         rooms.
         """
+        if source_string is None or len(source_string) == 0:
+            return "TRUE"
         # @ -> buildings, # -> tags, $ -> rooms
         if ROOMS_REGEX.match(source_string) is None:
             raise InvalidSearchException("Invalid source string for rooms.")
@@ -154,6 +160,8 @@ class Search:
         """Uses the given search string to generate a SQL WHERE-clause to be used in a query for
         buildings.
         """
+        if source_string is None or len(source_string) == 0:
+            return "TRUE"
         # @ -> buildings, # -> tags
         if BUILDINGS_REGEX.match(source_string) is None:
             raise InvalidSearchException("Invalid source string for buildings.")
@@ -165,6 +173,9 @@ class Search:
         """ Uses the given search string to generate a SQL WHERE-clause to be used in a query for
         values.
         """
+        if source_string is None or len(source_string) == 0:
+            return "TRUE"
+        # ~ -> values
         if VALUES_REGEX.match(source_string) is None:
             raise InvalidSearchException("Invalid source string for values.")
 

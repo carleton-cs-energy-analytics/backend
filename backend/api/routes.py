@@ -96,7 +96,7 @@ def get_values():
     start_time = request.args.get('start_time')
     end_time = request.args.get('end_time')
 
-    search = request.args.get('search') or 'TRUE'
+    search = request.args.get('search')
 
     return Values.get(tuple(point_ids), start_time, end_time, Search.values(search)) or "[]"
 
