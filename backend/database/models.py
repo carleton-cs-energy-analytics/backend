@@ -410,6 +410,15 @@ class Buildings:
 
         return query_single_column(base_query + " WHERE (" + where_clause + ")")
 
+    @staticmethod
+    def floors(building_id):
+        return query_single_column("SELECT DISTINCT floor FROM rooms WHERE building_id = %s",
+                                   building_id)
+
+    @staticmethod
+    def all_floors():
+        return query_single_column("SELECT DISTINCT floor FROM rooms")
+
 
 class Tags:
     sql_query = """
@@ -445,6 +454,35 @@ class Categories:
     def get_by_id(id):
         """Returns the JSON-encoded Category whose id is that given."""
         return query_json_item(Categories.sql_query + "WHERE category_id = %s", (id,))
+
+
+class Units:
+    sql_query = "SELECT value_unit_id AS unit_id, unit AS unit_name, measurement FROM value_units "
+
+    @staticmethod
+    def all():
+        """Returns a JSON-encoded array of all Categories."""
+        return query_json_array(Units.sql_query)
+
+    @staticmethod
+    def get_by_id(id):
+        """Returns the JSON-encoded Category whose id is that given."""
+        return query_json_item(Units.sql_query + "WHERE value_unit_id = %s", (id,))
+
+
+class Types:
+    sql_query = "SELECT value_type_id AS type_id, name AS type_name, type AS cases " \
+                "FROM value_types "
+
+    @staticmethod
+    def all():
+        """Returns a JSON-encoded array of all Categories."""
+        return query_json_array(Types.sql_query)
+
+    @staticmethod
+    def get_by_id(id):
+        """Returns the JSON-encoded Category whose id is that given."""
+        return query_json_item(Types.sql_query + "WHERE category_id = %s", (id,))
 
 
 class Values:

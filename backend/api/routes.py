@@ -70,6 +70,16 @@ def get_building(id):
     return Buildings.get_by_id(id) or "[]"
 
 
+@api.route('/building/<id>/floors')
+def get_floors_by_building_id(id):
+    return Buildings.floors(id) or "[]"
+
+
+@api.route('/all_floors')  # This name is bad and inconsistent, but we have bigger fish to fry
+def get_all_floors():
+    return Buildings.all_floors() or "[]"
+
+
 @api.route('/tags')
 def get_all_tags():
     return Tags.all() or "[]"
@@ -88,6 +98,26 @@ def get_all_categories():
 @api.route('/category/<id>')
 def get_tags_by_category_id(id):
     return Categories.get_by_id(id) or "[]"
+
+
+@api.route('/units')
+def get_all_units():
+    return Units.all() or "[]"
+
+
+@api.route('/unit/<id>')
+def get_unit_by_id(id):
+    return Units.get_by_id(id) or "[]"
+
+
+@api.route('/types')
+def get_all_types():
+    return Types.all() or "[]"
+
+
+@api.route('/type/<id>')
+def get_type_by_id(id):
+    return Types.get_by_id(id) or "[]"
 
 
 @api.route('/values', methods=['GET'])
