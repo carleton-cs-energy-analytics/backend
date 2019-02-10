@@ -110,6 +110,11 @@ def get_unit_by_id(id):
     return Units.get_by_id(id) or "[]"
 
 
+@api.route('/measurements')
+def get_all_measurements():
+    return Units.get_all_measurements() or "[]"
+
+
 @api.route('/types')
 def get_all_types():
     return Types.all() or "[]"

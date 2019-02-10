@@ -32,12 +32,7 @@ def query_json_array(query, vars=None):
     :param vars: Any values that need to be injected into the SQL query
     :return: A string containing the JSON-encoded results of the query
     """
-    with CONN.cursor() as curs:
-        curs.execute("SELECT json_agg(a)::TEXT FROM (" + query + ") AS a;", vars)
-        result = curs.fetchall()
-        assert len(result) == 1
-        assert len(result[0]) == 1
-        return result[0][0]  # TODO: What about when there are no results? "[]" or error?
+    return query_single_cell("SELECT json_agg(a)::TEXT FROM (" + query + ") AS a;", vars)
 
 
 def query_json_item(query, vars=None):
@@ -50,13 +45,17 @@ def query_json_item(query, vars=None):
     :param vars: Any values that need to be injected into the SQL query
     :return: A string containing the JSON-encoded result of the query
     """
-    with CONN.cursor() as curs:
-        curs.execute("SELECT row_to_json(a)::TEXT FROM (" + query + ") AS a;", vars)
-        result = curs.fetchall()
-        assert len(result) == 1
-        assert len(result[0]) == 1
-        return result[0][0]
+    return query_single_cell("SELECT row_to_json(a)::TEXT FROM (" + query + ") AS a;", vars)
 
+
+def query_json_single_column(query, vars=None):
+    """Returns a JSON-encoded string of the values in the column aliased `col` from the given query.
+
+    :param query: The SQL query
+    :param vars: Any values that need to be injected into the SQL query
+    :return: A string containing the JSON-encoded result of the query
+    """
+    return query_single_cell("SELECT json_agg(col)::TEXT FROM (" + query + ") AS a;", vars)
 
 def query_single_column(query, vars=None):
     """Takes a SQL query whose result is a single column, and returns the values of that column as a
@@ -412,12 +411,13 @@ class Buildings:
 
     @staticmethod
     def floors(building_id):
-        return query_single_column("SELECT DISTINCT floor FROM rooms WHERE building_id = %s",
-                                   building_id)
+        return query_json_single_column(
+            "SELECT DISTINCT floor AS col FROM rooms WHERE building_id = %s ORDER BY floor",
+            building_id)
 
     @staticmethod
     def all_floors():
-        return query_single_column("SELECT DISTINCT floor FROM rooms")
+        return query_json_single_column("SELECT DISTINCT floor AS col FROM rooms ORDER BY floor")
 
 
 class Tags:
@@ -468,6 +468,10 @@ class Units:
     def get_by_id(id):
         """Returns the JSON-encoded Category whose id is that given."""
         return query_json_item(Units.sql_query + "WHERE value_unit_id = %s", (id,))
+
+    @staticmethod
+    def get_all_measurements():
+        return query_json_single_column("SELECT DISTINCT measurement AS col FROM value_units")
 
 
 class Types:
