@@ -1,4 +1,4 @@
-from flask import Blueprint, request, abort
+from flask import Blueprint, request, abort, jsonify
 from backend.database.models import *
 from backend.database.Search import Search
 from backend.database.exceptions import *
@@ -15,6 +15,17 @@ def get_points():
             abort(400, e)
     else:
         return Points.all() or "[]"
+
+
+@api.route('/points/ids')
+def get_points_ids():
+    if not request.args.get('search'):
+        abort(400, "Must include search paramter")
+
+    try:
+        return jsonify(Points.ids_where(Search.points(request.args.get('search')))) or "[]"
+    except InvalidSearchException as e:
+        abort(400, e)
 
 
 @api.route('/point/<id>')
