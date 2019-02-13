@@ -7,5 +7,11 @@
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
       <jdbc-url>jdbc:postgresql://localhost:5432/energy-dev</jdbc-url>
     </data-source>
+    <data-source source="LOCAL" name="energy@energycomps.its" read-only="true" uuid="e626396f-b572-4145-9d16-49cf4967feb1">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5432/energy</jdbc-url>
+    </data-source>
   </component>
 </project>
