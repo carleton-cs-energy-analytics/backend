@@ -6,9 +6,9 @@
 
 2) Run `pipenv install`
 
-3) To run the server, run `pipenv run python3 run.py`
+3) To run the server, run `pipenv run python3 app.py`
 
-   To run the server in debug mode, run `FLASK_DEBUG=1 pipenv run python3 run.py`
+   To run the server in debug mode, run `FLASK_DEBUG=1 pipenv run python3 app.py`
 
 ## Running for production
 
@@ -18,18 +18,10 @@
 
 3) Use make to launch the server
 
-   * Copy Makefile to Makefile.dev
-   * Edit Makefile.dev to enter our database password where required
-   * Run `make -f Makefile.dev run` or `make -f Makefile.dev debug`
-   * **Do not** add Makefile.dev to the repository
-
-## Running for production
-
-1) Login to our server as the user "energy"
-
-2) Check the Makefile to make sure it's using the port you want (at this writing, we're planning to use 8080)
-
-3) Run `make run`
+   * Copy Makefile-prod to Makefile
+   * Edit Makefile to enter our database password where required
+   * Run `make run` or `make debug`
+   * **Do not** add Makefile to the repository
 
 ## Data pipeline from the Siemens Insight server
 

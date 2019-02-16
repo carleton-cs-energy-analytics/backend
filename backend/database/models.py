@@ -229,9 +229,10 @@ class Points:
                    LEFT JOIN devices_tags ON devices.device_id = devices_tags.device_id
                    LEFT JOIN rooms_tags ON rooms.room_id = rooms_tags.room_id
                    LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
+            WHERE (%s)
             GROUP BY points.value_type_id
             """
-        return query_json_array(base_query + " WHERE (" + where_clause + ")")
+        return query_json_array(base_query % where_clause)
 
 
 class Devices:

@@ -87,9 +87,12 @@ class Search:
                 sql_string += " devices.device_id = " + token[1:]
             elif re.match("\\*\\d+", token):
                 sql_string += " points.point_id = " + token[1:]
-            elif re.match(":floor ([<>=]|[<>!]=) \\d+", token):
+            elif re.match(":floor ([<>=]|[<>!]=)? ?\\d+", token):
                 matches = re.match(":floor ([<>=]|[<>!]=) (\\d+)", token).groups()
-                sql_string += " rooms.floor " + matches[0] + " " + matches[1]
+                if len(matches) == 2:
+                    sql_string += " rooms.floor " + matches[0] + " " + matches[1]
+                else:
+                    sql_string += " rooms.floor = " + matches[1]
             elif re.match(":type \\d+", token):
                 matches = re.match(":type (\\d+)", token).groups()
                 sql_string += " points.value_type_id = " + matches[0]
@@ -125,6 +128,7 @@ class Search:
             return "TRUE"
         # @ -> buildings, # -> tags, $ -> rooms, % -> devices, * -> points
         if POINTS_REGEX.match(source_string) is None:
+            print("invalid search source string:", source_string)
             raise InvalidSearchException("Invalid source string for points.")
 
         return Search.parse(source_string, 'point')
