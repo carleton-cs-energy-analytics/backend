@@ -128,8 +128,7 @@ class Search:
             return "TRUE"
         # @ -> buildings, # -> tags, $ -> rooms, % -> devices, * -> points
         if POINTS_REGEX.match(source_string) is None:
-            print("invalid search source string:", source_string)
-            raise InvalidSearchException("Invalid source string for points.")
+            raise InvalidSearchException("Invalid source string for points: " + source_string)
 
         return Search.parse(source_string, 'point')
 
@@ -142,7 +141,7 @@ class Search:
             return "TRUE"
         # @ -> buildings, # -> tags, $ -> rooms, % -> devices
         if DEVICES_REGEX.match(source_string) is None:
-            raise InvalidSearchException("Invalid source string for devices.")
+            raise InvalidSearchException("Invalid source string for devices: " + source_string)
 
         return Search.parse(source_string, 'device')
 
@@ -155,7 +154,7 @@ class Search:
             return "TRUE"
         # @ -> buildings, # -> tags, $ -> rooms
         if ROOMS_REGEX.match(source_string) is None:
-            raise InvalidSearchException("Invalid source string for rooms.")
+            raise InvalidSearchException("Invalid source string for rooms: " + source_string)
 
         return Search.parse(source_string, 'room')
 
@@ -168,7 +167,7 @@ class Search:
             return "TRUE"
         # @ -> buildings, # -> tags
         if BUILDINGS_REGEX.match(source_string) is None:
-            raise InvalidSearchException("Invalid source string for buildings.")
+            raise InvalidSearchException("Invalid source string for buildings: " + source_string)
 
         return Search.parse(source_string, 'building')
 
@@ -181,6 +180,6 @@ class Search:
             return "TRUE"
         # ~ -> values
         if VALUES_REGEX.match(source_string) is None:
-            raise InvalidSearchException("Invalid source string for values.")
+            raise InvalidSearchException("Invalid source string for values: " + source_string)
 
         return Search.parse(source_string, '')
