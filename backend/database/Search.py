@@ -35,7 +35,7 @@ POINTS_REGEX = re.compile(
 
 VALUES_REGEX = re.compile(
     "^("
-    "~([<>=]|[<>!]=) ([+-]?([0-9]*[.])?[0-9]+)|"
+    "~([<>=]|[<>!]=) ?([+-]?([0-9]*[.])?[0-9]+)|"
     "and|or|not|\\(|\\)|\\s+"
     ")+$")
 
@@ -43,7 +43,7 @@ PARSER_REGEX = re.compile(
     "("
     "[@#$%*]\\d+|"
     ":(\\w+) (([<>=] |[<>!]= )?(\\d+)|\'\\w+\')|"
-    "~([<>=]|[<>!]=) ([+-]?[0-9]+)|"
+    "~([<>=]|[<>!]=) ?([+-]?[0-9]+)|"
     "and|or|not|\\(|\\)"
     ")"
 )
@@ -112,9 +112,9 @@ class Search:
                 sql_string += "("
             elif re.match("\\)", token):
                 sql_string += ")"
-            elif re.match("~([<>=]|[<>!]=) ([+-]?[0-9]+)", token):
+            elif re.match("~([<>=]|[<>!]=) ?([+-]?[0-9]+)", token):
                 sql_string += " int " + token[1:]
-            elif re.match("~([<>=]|[<>!]=) ([+-]?([0-9]*[.])?[0-9]+)", token):
+            elif re.match("~([<>=]|[<>!]=) ?([+-]?([0-9]*[.])?[0-9]+)", token):
                 sql_string += " double " + token[1:]
 
         return sql_string

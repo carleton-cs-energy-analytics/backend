@@ -170,6 +170,8 @@ def values_verify():
         abort(400, "Request must include a `search` argument")
     try:
         Search.values(request.args.get("search"))
+    except InvalidSearchException:
+        return "Invalid Value Search Syntax"
     except psycopg2.Error as e:  # Any InvalidSearchException will be thrown and result in a 500.
         return "Invalid Value Search: " + str(e.pgerror)
     return "Valid"
