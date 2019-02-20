@@ -144,7 +144,11 @@ def get_values():
 
     search = request.args.get('search')
 
-    return Values.get(tuple(point_ids), start_time, end_time, Search.values(search)) or "[]"
+    search_sql = Search.values(search)
+    print("search", search)
+    print("sql", search_sql)
+
+    return Values.get(tuple(point_ids), start_time, end_time, search_sql) or "[]"
 
 
 @api.route('/values', methods=['POST'])
@@ -169,9 +173,16 @@ def values_verify():
     if request.args.get("search") is None:
         abort(400, "Request must include a `search` argument")
     try:
-        Search.values(request.args.get("search"))
+        point_ids = request.args.getlist('point_ids') or request.args.getlist('point_ids[]')
+        start_time = request.args.get('start_time')
+        end_time = request.args.get('end_time')
+
+        search = request.args.get('search')
+        search_sql = Search.values(search)
+
+        return "%s values found" % Values.get_counts(tuple(point_ids), start_time, end_time,
+                                                     search_sql)
     except InvalidSearchException:
         return "Invalid Value Search Syntax"
     except psycopg2.Error as e:  # Any InvalidSearchException will be thrown and result in a 500.
         return "Invalid Value Search: " + str(e.pgerror)
-    return "Valid"

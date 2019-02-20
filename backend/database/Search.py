@@ -112,10 +112,8 @@ class Search:
                 sql_string += "("
             elif re.match("\\)", token):
                 sql_string += ")"
-            elif re.match("~([<>=]|[<>!]=) ?([+-]?[0-9]+)", token):
-                sql_string += " int " + token[1:]
             elif re.match("~([<>=]|[<>!]=) ?([+-]?([0-9]*[.])?[0-9]+)", token):
-                sql_string += " double " + token[1:]
+                sql_string += " (values.double %s OR values.int %s) " % (token[1:], token[1:])
 
         return sql_string
 

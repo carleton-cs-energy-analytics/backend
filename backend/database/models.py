@@ -57,6 +57,7 @@ def query_json_single_column(query, vars=None):
     """
     return query_single_cell("SELECT json_agg(col)::TEXT FROM (" + query + ") AS a;", vars)
 
+
 def query_single_column(query, vars=None):
     """Takes a SQL query whose result is a single column, and returns the values of that column as a
     list.
@@ -627,6 +628,38 @@ class Values:
               AND timestamp <= %s
               AND (""" + where_clause + """)
             """, (
+            point_ids, start_time, end_time,
+            point_ids, start_time, end_time,
+            point_ids, start_time, end_time,
+            point_ids, start_time, end_time,
+        ))
+
+    @staticmethod
+    def get_counts(point_ids, start_time, end_time, where_clause='TRUE'):
+        """Returns JSON-encoded array of values which match the given parameters.
+
+        :param point_ids: A list of the IDs of the points whose values should be included
+        :param start_time: The UNIX Epoch time which marks the beginning of the range to be
+        included, inclusive
+        :param end_time: The UNIX Epoch time which marks the end of the range to be
+        included, inclusive
+        :param where_clause: Additional restrictions to add to the WHERE clause
+        :return: A JSON-encoded array of Values.
+        """
+        if len(point_ids) == 0:
+            return "[]"
+        return query_single_cell("""
+                SELECT COUNT(UNIQUE value_id)
+                FROM values
+                       LEFT JOIN points ON values.point_id = points.point_id
+                       LEFT JOIN value_types ON points.value_type_id = value_types.value_type_id
+                WHERE int IS NOT NULL
+                  AND points.value_type_id = 1
+                  AND values.point_id IN %s
+                  AND %s <= timestamp
+                  AND timestamp <= %s
+                  AND (""" + where_clause + """)
+                """, (
             point_ids, start_time, end_time,
             point_ids, start_time, end_time,
             point_ids, start_time, end_time,
