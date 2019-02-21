@@ -30,8 +30,7 @@ class ValueTests(unittest.TestCase):
 
         # silly fix because the value_id is changed each time the test is run
         self.assertEqual(result[:84] + result[-54:],
-                         """[{"value_id":3,"point_name":"EV.RM107.RT","timestamp":13,"value":10}, 
- {"value_id":,"point_name":"EV.RM107.RT","timestamp":23,"value":8}]""")
+                         """[{"value_id":3,"point_name":"EV.RM107.RT","timestamp":13,"value":10,"matches":true},EV.RM107.RT","timestamp":23,"value":8,"matches":true}]""")
 
         self.remove_int_point_to_be_added(((3,), timestamp, value))
 
@@ -47,17 +46,17 @@ class ValueTests(unittest.TestCase):
 
     def test_get_single(self):
         self.assertEqual(Values.get((1,), 0, 3),
-                         '[{"value_id":1,"point_name":"CMC.328.RT","timestamp":2,"value":6}]')
+                         '[{"value_id":1,"point_name":"CMC.328.RT","timestamp":2,"value":6,"matches":true}]')
 
     def test_get_many(self):
         self.assertEqual(Values.get((1, 3, 4, 5), 0, 13),
-                         """[{"value_id":1,"point_name":"CMC.328.RT","timestamp":2,"value":6}, 
- {"value_id":3,"point_name":"EV.RM107.RT","timestamp":13,"value":10}, 
- {"value_id":2,"point_name":"EV.RM107.SP","timestamp":5,"value":9.8}]""")
+                         """[{"value_id":1,"point_name":"CMC.328.RT","timestamp":2,"value":6,"matches":true}, 
+ {"value_id":3,"point_name":"EV.RM107.RT","timestamp":13,"value":10,"matches":true}, 
+ {"value_id":2,"point_name":"EV.RM107.SP","timestamp":5,"value":9.8,"matches":true}]""")
 
     def test_get_enum(self):
         self.assertEqual(Values.get((2,), 0, 36),
-                         """[{"value_id":4,"point_name":"CMC.328.SP","timestamp":35,"value":"FAULT"}]""")
+                         """[{"value_id":4,"point_name":"CMC.328.SP","timestamp":35,"value":"FAULT","matches":true}]""")
 
 
 if __name__ == '__main__':
