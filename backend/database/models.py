@@ -586,7 +586,11 @@ class Values:
         if len(point_ids) == 0:
             return "[]"
         return query_json_array("""
-            SELECT value_id, points.name AS point_name, timestamp, '[false,true]'::JSONB->int::INT AS value
+            SELECT value_id, 
+                points.name AS point_name, 
+                timestamp, 
+                '[false,true]'::JSONB->int::INT AS value,
+                (""" + where_clause + """) AS matches
             FROM values
                    LEFT JOIN points ON values.point_id = points.point_id
                    LEFT JOIN value_types ON points.value_type_id = value_types.value_type_id
@@ -595,9 +599,12 @@ class Values:
               AND values.point_id IN %s
               AND %s <= timestamp
               AND timestamp <= %s
-              AND (""" + where_clause + """)
             UNION ALL
-            SELECT value_id, points.name AS point_name, timestamp, to_jsonb(int) AS value
+            SELECT value_id, 
+                points.name AS point_name, 
+                timestamp, 
+                to_jsonb(int) AS value,
+                (""" + where_clause + """) AS matches
             FROM values
                    LEFT JOIN points ON values.point_id = points.point_id
                    LEFT JOIN value_types ON points.value_type_id = value_types.value_type_id
@@ -606,9 +613,12 @@ class Values:
               AND values.point_id IN %s
               AND %s <= timestamp
               AND timestamp <= %s
-              AND (""" + where_clause + """)
             UNION ALL
-            SELECT value_id, points.name AS point_name, timestamp, (type->values.int::INT) AS value
+            SELECT value_id, 
+                points.name AS point_name, 
+                timestamp, 
+                (type->values.int::INT) AS value,
+                (""" + where_clause + """) AS matches
             FROM values
                    LEFT JOIN points ON values.point_id = points.point_id
                    LEFT JOIN value_types ON points.value_type_id = value_types.value_type_id
@@ -617,16 +627,18 @@ class Values:
               AND values.point_id IN %s
               AND %s <= timestamp
               AND timestamp <= %s
-              AND (""" + where_clause + """)
             UNION ALL
-            SELECT value_id, points.name AS point_name, timestamp, to_jsonb(double) AS value
+            SELECT value_id, 
+                points.name AS point_name, 
+                timestamp, 
+                to_jsonb(double) AS value,
+                (""" + where_clause + """) AS matches
             FROM values
                    LEFT JOIN points ON values.point_id = points.point_id
             WHERE double IS NOT NULL
               AND values.point_id IN %s
               AND %s <= timestamp
               AND timestamp <= %s
-              AND (""" + where_clause + """)
             """, (
             point_ids, start_time, end_time,
             point_ids, start_time, end_time,
