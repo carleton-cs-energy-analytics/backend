@@ -6,24 +6,24 @@ from backend.database.exceptions import *
 api = Blueprint('api', __name__)
 
 
-@api.route('/points')
+@api.route('/points', methods=['GET', 'POST'])
 def get_points():
-    if request.args.get('search'):
+    if request.values.get('search'):
         try:
-            return Points.where(Search.points(request.args.get('search'))) or "[]"
+            return Points.where(Search.points(request.values.get('search'))) or "[]"
         except InvalidSearchException as e:
             abort(400, e)
     else:
         return Points.all() or "[]"
 
 
-@api.route('/points/ids')
+@api.route('/points/ids', methods=['GET', 'POST'])
 def get_points_ids():
-    if not request.args.get('search'):
+    if not request.values.get('search'):
         abort(400, "Must include search paramter")
 
     try:
-        return jsonify(Points.ids_where(Search.points(request.args.get('search')))) or "[]"
+        return jsonify(Points.ids_where(Search.points(request.values.get('search')))) or "[]"
     except InvalidSearchException as e:
         abort(400, e)
 
@@ -33,11 +33,11 @@ def get_point_by_id(id):
     return Points.get_by_id(id) or "[]"
 
 
-@api.route('/devices')
+@api.route('/devices', methods=['GET', 'POST'])
 def get_devices():
-    if request.args.get('search'):
+    if request.values.get('search'):
         try:
-            return Devices.where(Search.devices(request.args.get('search'))) or "[]"
+            return Devices.where(Search.devices(request.values.get('search'))) or "[]"
         except InvalidSearchException as e:
             abort(400, e)
     else:
@@ -49,11 +49,11 @@ def get_device_by_id(id):
     return Devices.get_by_id(id) or "[]"
 
 
-@api.route('/rooms')
+@api.route('/rooms', methods=['GET', 'POST'])
 def get_rooms():
-    if request.args.get('search'):
+    if request.values.get('search'):
         try:
-            return Rooms.where(Search.rooms(request.args.get('search'))) or "[]"
+            return Rooms.where(Search.rooms(request.values.get('search'))) or "[]"
         except InvalidSearchException as e:
             abort(400, e)
     else:
@@ -65,11 +65,11 @@ def get_room(id):
     return Rooms.get_by_id(id) or "[]"
 
 
-@api.route('/buildings')
+@api.route('/buildings', methods=['GET', 'POST'])
 def get_buildings():
-    if request.args.get('search'):
+    if request.values.get('search'):
         try:
-            return Buildings.where(Search.buildings(request.args.get('search'))) or "[]"
+            return Buildings.where(Search.buildings(request.values.get('search'))) or "[]"
         except InvalidSearchException as e:
             abort(400, e)
     else:
@@ -136,13 +136,13 @@ def get_type_by_id(id):
     return Types.get_by_id(id) or "[]"
 
 
-@api.route('/values', methods=['GET'])
+@api.route('/values', methods=['GET', 'POST'])
 def get_values():
-    point_ids = request.args.getlist('point_ids') or request.args.getlist('point_ids[]')
-    start_time = request.args.get('start_time')
-    end_time = request.args.get('end_time')
+    point_ids = request.values.getlist('point_ids') or request.values.getlist('point_ids[]')
+    start_time = request.values.get('start_time')
+    end_time = request.values.get('end_time')
 
-    search = request.args.get('search')
+    search = request.values.get('search')
 
     search_sql = Search.values(search)
     print("search", search)
@@ -151,33 +151,33 @@ def get_values():
     return Values.get(tuple(point_ids), start_time, end_time, search_sql) or "[]"
 
 
-@api.route('/values', methods=['POST'])
+@api.route('/values/add', methods=['POST'])
 def post_values():
     Values.add(request.get_json())
 
     return "Success"
 
 
-@api.route('/points/verify')
+@api.route('/points/verify', methods=['GET', 'POST'])
 def search_verify():
-    if request.args.get("search") is None:
+    if request.values.get("search") is None:
         abort(400, "Request must include a `search` argument")
     try:
-        return Points.counts_where(Search.points(request.args.get("search"))) or "[]"
+        return Points.counts_where(Search.points(request.values.get("search"))) or "[]"
     except psycopg2.Error as e:  # Any InvalidSearchException will be thrown and result in a 500.
         return "Invalid Point Search: " + str(e.pgerror)
 
 
-@api.route('/values/verify')
+@api.route('/values/verify', methods=['GET', 'POST'])
 def values_verify():
-    if request.args.get("search") is None:
+    if request.values.get("search") is None:
         abort(400, "Request must include a `search` argument")
     try:
-        point_ids = request.args.getlist('point_ids') or request.args.getlist('point_ids[]')
-        start_time = request.args.get('start_time')
-        end_time = request.args.get('end_time')
+        point_ids = request.values.getlist('point_ids') or request.values.getlist('point_ids[]')
+        start_time = request.values.get('start_time')
+        end_time = request.values.get('end_time')
 
-        search = request.args.get('search')
+        search = request.values.get('search')
         search_sql = Search.values(search)
 
         return "%s values found" % Values.get_counts(tuple(point_ids), start_time, end_time,
@@ -200,11 +200,11 @@ def get_rule_by_id(id):
 
 @api.route('/rule/add', methods=['POST'])
 def post_rule_add():
-    if request.args.get("name") is None:
+    if request.values.get("name") is None:
         abort(400, "Name parameter required")
-    if request.args.get("rule") is None:
+    if request.values.get("rule") is None:
         abort(400, "Rule parameter required")
-    Rules.add(request.args.get("name"), request.args.get("rule"))
+    Rules.add(request.values.get("name"), request.values.get("rule"))
     return "Success"
 
 
@@ -216,9 +216,9 @@ def post_rule_remove(id):
 
 @api.route('/rule/<id>/update', methods=['POST'])
 def post_rule_update(id):
-    if request.args.get("name") is None:
+    if request.values.get("name") is None:
         abort(400, "Name parameter required")
-    if request.args.get("rule") is None:
+    if request.values.get("rule") is None:
         abort(400, "Rule parameter required")
-    Rules.update(id, request.args.get("name"), request.args.get("rule"))
+    Rules.update(id, request.values.get("name"), request.values.get("rule"))
     return "Success"
