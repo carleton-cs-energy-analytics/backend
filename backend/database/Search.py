@@ -13,7 +13,7 @@ BUILDINGS_REGEX = re.compile(
 ROOMS_REGEX = re.compile(
     "^("
     "[@#$]\\d+|"
-    ":(floor) (([<>=] |[<>!]= )?(\\d+))|"
+    ":(floor) (([<>=] |[<>!]= )?([+-]?[0-9]+))|"
     "and|or|not|\\(|\\)|"
     "\\s+"
     ")+$")
@@ -21,7 +21,7 @@ ROOMS_REGEX = re.compile(
 DEVICES_REGEX = re.compile(
     "^("
     "[@#$%]\\d+|"
-    ":(floor) (([<>=] |[<>!]= )?(\\d+))|"
+    ":(floor) (([<>=] |[<>!]= )?([+-]?[0-9]+))|"
     "and|or|not|\\(|\\)|"
     "\\s+"
     ")+$")
@@ -29,7 +29,7 @@ DEVICES_REGEX = re.compile(
 POINTS_REGEX = re.compile(
     "^("
     "[@#$%*]\\d+|"
-    ":(floor|type|unit|measurement) (([<>=] |[<>!]= )?(\\d+)|\'\\w+\')|"
+    ":(floor|type|unit|measurement) (([<>=] |[<>!]= )?([+-]?[0-9]+)|\'\\w+\')|"
     "and|or|not|\\(|\\)|\\s+"
     ")+$")
 
@@ -42,8 +42,8 @@ VALUES_REGEX = re.compile(
 PARSER_REGEX = re.compile(
     "("
     "[@#$%*]\\d+|"
-    ":(\\w+) (([<>=] |[<>!]= )?(\\d+)|\'\\w+\')|"
-    "~([<>=]|[<>!]=) ?([+-]?[0-9]+)|"
+    ":(\\w+) (([<>=] |[<>!]= )?([+-]?[0-9]+)|\'\\w+\')|"
+    "~([<>=]|[<>!]=) ?([+-]?([0-9]*[.])?[0-9]+)|"
     "and|or|not|\\(|\\)"
     ")"
 )
@@ -87,8 +87,8 @@ class Search:
                 sql_string += " devices.device_id = " + token[1:]
             elif re.match("\\*\\d+", token):
                 sql_string += " points.point_id = " + token[1:]
-            elif re.match(":floor ([<>=]|[<>!]=)? ?\\d+", token):
-                matches = re.match(":floor ([<>=]|[<>!]=) (\\d+)", token).groups()
+            elif re.match(":floor ([<>=]|[<>!]=)? ?[+-]?[0-9]+", token):
+                matches = re.match(":floor ([<>=]|[<>!]=) ([+-]?[0-9]+)", token).groups()
                 if len(matches) == 2:
                     sql_string += " rooms.floor " + matches[0] + " " + matches[1]
                 else:
