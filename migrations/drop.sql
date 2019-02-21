@@ -1,4 +1,5 @@
-DROP TABLE  values;
+DROP TABLE rules;
+DROP TABLE values;
 DROP TABLE points_tags;
 DROP TABLE devices_tags;
 DROP TABLE rooms_tags;

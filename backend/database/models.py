@@ -665,3 +665,33 @@ class Values:
             point_ids, start_time, end_time,
             point_ids, start_time, end_time,
         ))
+
+
+class Rules:
+    sql_query = "SELECT rules.rule_id, rules.name AS rule_name, rules.rule FROM rules "
+
+    @staticmethod
+    def all():
+        """Returns a JSON-encoded array of all Rules."""
+        return query_json_array(Rules.sql_query)
+
+    @staticmethod
+    def get_by_id(id):
+        """Returns the JSON-encoded Rule whose id is that given."""
+        return query_json_item(Rules.sql_query + "WHERE rule_id = %s", (id,))
+
+    @staticmethod
+    def add(name, rule):
+        """Adds a new rule to the database, with the given name and rule JSON"""
+        execute_and_commit("""INSERT INTO rules (name, rule) VALUES (%s, %s)""", (name, rule))
+
+    @staticmethod
+    def remove(id):
+        """Adds a new rule to the database, with the given name and rule JSON"""
+        execute_and_commit("""DELETE FROM rules WHERE rule_id = %s""", (id,))
+
+    @staticmethod
+    def update(id, name, rule):
+        """Adds a new rule to the database, with the given name and rule JSON"""
+        execute_and_commit("""UPDATE rules SET name = %s, rule = %s WHERE rule_id = %s""",
+                           (name, rule, id))

@@ -186,3 +186,39 @@ def values_verify():
         return "Invalid Value Search Syntax"
     except psycopg2.Error as e:  # Any InvalidSearchException will be thrown and result in a 500.
         return "Invalid Value Search: " + str(e.pgerror)
+
+
+@api.route('/rules')
+def get_all_rules():
+    return Rules.all() or "[]"
+
+
+@api.route('/rule/<id>')
+def get_rule_by_id(id):
+    return Rules.get_by_id(id) or "[]"
+
+
+@api.route('/rule/add', methods=['POST'])
+def post_rule_add():
+    if request.args.get("name") is None:
+        abort(400, "Name parameter required")
+    if request.args.get("rule") is None:
+        abort(400, "Rule parameter required")
+    Rules.add(request.args.get("name"), request.args.get("rule"))
+    return "Success"
+
+
+@api.route('/rule/<id>/remove', methods=['POST'])
+def post_rule_remove(id):
+    Rules.remove(id)
+    return "Success"
+
+
+@api.route('/rule/<id>/update', methods=['POST'])
+def post_rule_update(id):
+    if request.args.get("name") is None:
+        abort(400, "Name parameter required")
+    if request.args.get("rule") is None:
+        abort(400, "Rule parameter required")
+    Rules.update(id, request.args.get("name"), request.args.get("rule"))
+    return "Success"

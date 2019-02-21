@@ -100,3 +100,10 @@ CREATE TABLE values (
   UNIQUE (point_id, timestamp)
 )
 ;
+
+CREATE TABLE rules (
+  rule_id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL UNIQUE,
+  rule JSONB NOT NULL
+)
+;
