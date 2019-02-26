@@ -2,6 +2,7 @@ from flask import Blueprint, request, abort, jsonify
 from backend.database.models import *
 from backend.database.Search import Search
 from backend.database.exceptions import *
+import datetime as dt
 
 api = Blueprint('api', __name__)
 
@@ -180,8 +181,8 @@ def values_verify():
         search = request.values.get('search')
         search_sql = Search.values(search)
 
-        return "%s values found" % Values.get_counts(tuple(point_ids), start_time, end_time,
-                                                     search_sql)
+        return "%s values found" % Values.get_count(tuple(point_ids), start_time, end_time,
+                                                    search_sql)
     except InvalidSearchException:
         return "Invalid Value Search Syntax"
     except psycopg2.Error as e:  # Any InvalidSearchException will be thrown and result in a 500.
@@ -198,27 +199,82 @@ def get_rule_by_id(id):
     return Rules.get_by_id(id) or "[]"
 
 
+def trycast_int(obj):
+    try:
+        return int(obj)
+    except (TypeError, ValueError):
+        return None
+
+
+@api.route('/rule/<id>/count')
+def get_rule_count(id):
+    since = trycast_int(request.values.get("since"))
+    start_time = trycast_int(request.values.get("start_time"))
+    end_time = trycast_int(request.values.get("end_time"))
+    if since is not None:
+        start = since
+        end = int(dt.datetime.now().timestamp())
+    elif None not in (start_time, end_time):
+        start = start_time
+        end = end_time
+    else:
+        end = int(dt.datetime.combine(dt.date.today(), dt.time()).timestamp())
+        start = end - 60*60*24
+
+    if not Values.has_any_since(start):
+        abort(404, "No values since start time %s" % start)
+
+    (point_search, value_search) = Rules.searches(id)
+    point_ids = Points.ids_where(Search.points(point_search))
+
+    return str(Values.get_count(point_ids, start, end, Search.values(value_search)))
+
+
+@api.route('/rule/<id>/matches')
+def get_rule_matches(id):
+    since = trycast_int(request.values.get("since"))
+    start_time = trycast_int(request.values.get("start_time"))
+    end_time = trycast_int(request.values.get("end_time"))
+    if since is not None:
+        start = since
+        end = int(dt.datetime.now().timestamp())
+    elif None not in (start_time, end_time):
+        start = start_time
+        end = end_time
+    else:
+        end = int(dt.datetime.combine(dt.date.today(), dt.time()).timestamp())
+        start = end - 60*60*24
+
+    if not Values.has_any_since(start):
+        abort(404, "No values since start time %s" % start)
+
+    (point_search, value_search) = Rules.searches(id)
+    point_ids = Points.ids_where(Search.points(point_search))
+
+    return Values.get(point_ids, start, end, Search.values(value_search))
+
+
 @api.route('/rule/add', methods=['POST'])
 def post_rule_add():
-    if request.values.get("name") is None:
-        abort(400, "Name parameter required")
-    if request.values.get("rule") is None:
-        abort(400, "Rule parameter required")
-    Rules.add(request.values.get("name"), request.values.get("rule"))
+    name = request.values.get("name")
+    url = request.values.get("url")
+    point_search = request.values.get("point_search")
+    value_search = request.values.get("value_search")
+    if None in (name, url, point_search, value_search):
+        abort(400)
+    Rules.add(name, url, point_search, value_search)
     return "Success"
 
 
-@api.route('/rule/<id>/remove', methods=['POST'])
+@api.route('/rule/<id>/delete', methods=['POST'])
 def post_rule_remove(id):
-    Rules.remove(id)
+    Rules.delete(id)
     return "Success"
 
 
-@api.route('/rule/<id>/update', methods=['POST'])
-def post_rule_update(id):
-    if request.values.get("name") is None:
-        abort(400, "Name parameter required")
-    if request.values.get("rule") is None:
-        abort(400, "Rule parameter required")
-    Rules.update(id, request.values.get("name"), request.values.get("rule"))
-    return "Success"
+@api.route('/rule/<id>/rename', methods=['POST'])
+def post_rule_rename(id):
+    name = request.values.get("name")
+    if name is None:
+        abort(400)
+    return Rules.rename(id, name)

@@ -4,17 +4,21 @@ from werkzeug.utils import secure_filename
 
 upload = Blueprint('upload', __name__)
 
+
 @upload.route('/')
 def upload_home():
     return 'upload service is running'
+
 
 @upload.route('siemens', methods=['POST'])
 def upload_siemens():
     return upload_file_to_directory('siemens')
 
+
 @upload.route('alc', methods=['POST'])
 def upload_alc():
     return upload_file_to_directory('alc')
+
 
 def upload_file_to_directory(directory):
     if 'file' not in request.files:

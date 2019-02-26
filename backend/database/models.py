@@ -174,6 +174,7 @@ class Points:
             LEFT JOIN devices ON points.device_id = devices.device_id
             LEFT JOIN rooms ON devices.room_id = rooms.room_id
             LEFT JOIN buildings ON rooms.building_id = buildings.building_id
+        ORDER BY points.name
         """
 
     @staticmethod
@@ -326,6 +327,7 @@ class Rooms:
                        )) AS tags
         FROM rooms
             LEFT JOIN buildings ON rooms.building_id = buildings.building_id
+        ORDER BY rooms.name
         """
 
     @staticmethod
@@ -640,14 +642,14 @@ class Values:
               AND %s <= timestamp
               AND timestamp <= %s
             """, (
-            point_ids, start_time, end_time,
-            point_ids, start_time, end_time,
-            point_ids, start_time, end_time,
-            point_ids, start_time, end_time,
+            tuple(point_ids), start_time, end_time,
+            tuple(point_ids), start_time, end_time,
+            tuple(point_ids), start_time, end_time,
+            tuple(point_ids), start_time, end_time,
         ))
 
     @staticmethod
-    def get_counts(point_ids, start_time, end_time, where_clause='TRUE'):
+    def get_count(point_ids, start_time, end_time, where_clause='TRUE'):
         """Returns JSON-encoded array of values which match the given parameters.
 
         :param point_ids: A list of the IDs of the points whose values should be included
@@ -661,26 +663,27 @@ class Values:
         if len(point_ids) == 0:
             return "[]"
         return query_single_cell("""
-                SELECT COUNT(UNIQUE value_id)
+                SELECT COUNT(value_id)
                 FROM values
                        LEFT JOIN points ON values.point_id = points.point_id
-                       LEFT JOIN value_types ON points.value_type_id = value_types.value_type_id
-                WHERE int IS NOT NULL
-                  AND points.value_type_id = 1
-                  AND values.point_id IN %s
+                WHERE values.point_id IN %s
                   AND %s <= timestamp
                   AND timestamp <= %s
                   AND (""" + where_clause + """)
-                """, (
-            point_ids, start_time, end_time,
-            point_ids, start_time, end_time,
-            point_ids, start_time, end_time,
-            point_ids, start_time, end_time,
-        ))
+                """, (tuple(point_ids), start_time, end_time,))
+
+    @staticmethod
+    def has_any_since(time):
+        return query_single_cell("SELECT exists(SELECT 1 FROM values WHERE timestamp>=%s)", (time,))
+
+    @staticmethod
+    def most_recent_timestamp():
+        return query_single_cell("SELECT max(timestamp) FROM values")
 
 
 class Rules:
-    sql_query = "SELECT rules.rule_id, rules.name AS rule_name, rules.rule FROM rules "
+    sql_query = "SELECT rule_id, name AS rule_name, priority, url, point_search, value_search " \
+                "FROM rules "
 
     @staticmethod
     def all():
@@ -693,17 +696,23 @@ class Rules:
         return query_json_item(Rules.sql_query + "WHERE rule_id = %s", (id,))
 
     @staticmethod
-    def add(name, rule):
-        """Adds a new rule to the database, with the given name and rule JSON"""
-        execute_and_commit("""INSERT INTO rules (name, rule) VALUES (%s, %s)""", (name, rule))
+    def searches(id):
+        return query_single_row("SELECT point_search, value_search FROM rules "
+                                "WHERE rule_id = %s", (id,))
 
     @staticmethod
-    def remove(id):
-        """Adds a new rule to the database, with the given name and rule JSON"""
-        execute_and_commit("""DELETE FROM rules WHERE rule_id = %s""", (id,))
+    def add(name, url, point_search, value_search):
+        """Adds a new rule to the database."""
+        execute_and_commit("INSERT INTO rules (name, url, point_search, value_search) "
+                           "VALUES (%s, %s, %s, %s)", (name, url, point_search, value_search))
 
     @staticmethod
-    def update(id, name, rule):
-        """Adds a new rule to the database, with the given name and rule JSON"""
-        execute_and_commit("""UPDATE rules SET name = %s, rule = %s WHERE rule_id = %s""",
-                           (name, rule, id))
+    def delete(id):
+        """Deletes a rule from the database."""
+        execute_and_commit("DELETE FROM rules WHERE rule_id = %s", (id,))
+
+    @staticmethod
+    def rename(id, name):
+        """Renames an existing rule."""
+        execute_and_commit("UPDATE rules SET name = %s WHERE rule_id = %s", (name, id))
+        return query_single_cell("SELECT name FROM rules WHERE rule_id = %s", (id,))

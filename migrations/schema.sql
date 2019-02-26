@@ -7,7 +7,7 @@ CREATE TABLE buildings (
 CREATE TABLE rooms (
   room_id     SERIAL PRIMARY KEY,
   name        VARCHAR(32) NOT NULL,
-  building_id INT NOT NULL REFERENCES buildings,
+  building_id INT         NOT NULL REFERENCES buildings,
   floor       INT,
   description TEXT,
   UNIQUE (name, building_id)
@@ -17,7 +17,7 @@ CREATE TABLE rooms (
 CREATE TABLE devices (
   device_id   SERIAL PRIMARY KEY,
   name        VARCHAR(255) NOT NULL,
-  room_id     INT NOT NULL REFERENCES rooms,
+  room_id     INT          NOT NULL REFERENCES rooms,
   description TEXT,
   UNIQUE (name, room_id)
 )
@@ -26,7 +26,7 @@ CREATE TABLE devices (
 CREATE TABLE value_types (
   value_type_id SERIAL PRIMARY KEY,
   name          VARCHAR(255) NOT NULL UNIQUE,
-  type          JSONB NOT NULL
+  type          JSONB        NOT NULL
 )
 ;
 
@@ -102,8 +102,11 @@ CREATE TABLE values (
 ;
 
 CREATE TABLE rules (
-  rule_id SERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL UNIQUE,
-  rule JSONB NOT NULL
+  rule_id      SERIAL PRIMARY KEY,
+  name         VARCHAR(255) NOT NULL UNIQUE,
+  priority     INT          NOT NULL DEFAULT 1,
+  url          TEXT         NOT NULL,
+  point_search TEXT         NOT NULL,
+  value_search TEXT         NOT NULL
 )
 ;
