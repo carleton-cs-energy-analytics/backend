@@ -174,25 +174,26 @@ class Points:
             LEFT JOIN devices ON points.device_id = devices.device_id
             LEFT JOIN rooms ON devices.room_id = rooms.room_id
             LEFT JOIN buildings ON rooms.building_id = buildings.building_id
+        WHERE %s
         ORDER BY points.name
         """
 
     @staticmethod
     def all():
         """Returns a JSON-encoded array of all Points."""
-        return query_json_array(Points.sql_query)
+        return query_json_array(Points.sql_query % "TRUE")
 
     @staticmethod
     def get_by_id(id):
         """Returns the JSON-encoded Point whose id is that given."""
-        return query_json_item(Points.sql_query + "WHERE point_id = %s", (id,))
+        return query_json_item(Points.sql_query % "point_id = %s", (id,))
 
     @staticmethod
     def get_by_ids(ids):
         """Returns a JSON-encoded array of all Points whose ids were given."""
         if len(ids) == 0:
             return "[]"
-        return query_json_array(Points.sql_query + "WHERE point_id IN %s", (tuple(ids),))
+        return query_json_array(Points.sql_query % "point_id IN %s", (tuple(ids),))
 
     @staticmethod
     def where(where_clause):
@@ -327,25 +328,26 @@ class Rooms:
                        )) AS tags
         FROM rooms
             LEFT JOIN buildings ON rooms.building_id = buildings.building_id
+        WHERE %s
         ORDER BY rooms.name
         """
 
     @staticmethod
     def all():
         """Returns a JSON-encoded array of all Rooms."""
-        return query_json_array(Rooms.sql_query)
+        return query_json_array(Rooms.sql_query % "TRUE")
 
     @staticmethod
     def get_by_id(id):
         """Returns the JSON-encoded Room whose id is that given."""
-        return query_json_item(Rooms.sql_query + "WHERE room_id = %s", (id,))
+        return query_json_item(Rooms.sql_query % "room_id = %s", (id,))
 
     @staticmethod
     def get_by_ids(ids):
         """Returns a JSON-encoded array of all Rooms whose ids were given."""
         if len(ids) == 0:
             return "[]"
-        return query_json_array(Rooms.sql_query + "WHERE room_id IN %s", (tuple(ids),))
+        return query_json_array(Rooms.sql_query % "room_id IN %s", (tuple(ids),))
 
     @staticmethod
     def where(where_clause):
