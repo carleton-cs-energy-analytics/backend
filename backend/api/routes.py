@@ -154,7 +154,10 @@ def get_values():
 
 @api.route('/values/add', methods=['POST'])
 def post_values():
-    Values.add(request.get_json())
+    json = request.get_json()
+    if Values.exists(json[0][0], json[0][1]):
+        abort(204, "File already imported")
+    Values.add(json)
 
     return "Success"
 

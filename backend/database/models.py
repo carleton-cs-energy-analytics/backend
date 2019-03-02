@@ -576,6 +576,12 @@ class Values:
                 """, int_values)
 
     @staticmethod
+    def exists(point_id, timestamp):
+        query_single_cell("""SELECT exists(SELECT 1 FROM values 
+        LEFT JOIN points ON values.point_id = points.point_id 
+        WHERE name = %s AND timestamp = %s);""", (point_id, timestamp))
+
+    @staticmethod
     def get(point_ids, start_time, end_time, where_clause='TRUE'):
         """Returns JSON-encoded array of values which match the given parameters.
 
