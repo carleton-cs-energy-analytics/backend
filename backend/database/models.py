@@ -577,7 +577,7 @@ class Values:
 
     @staticmethod
     def exists(point_id, timestamp):
-        query_single_cell("""SELECT exists(SELECT 1 FROM values 
+        return query_single_cell("""SELECT exists(SELECT 1 FROM values 
         LEFT JOIN points ON values.point_id = points.point_id 
         WHERE name = %s AND timestamp = %s);""", (point_id, timestamp))
 

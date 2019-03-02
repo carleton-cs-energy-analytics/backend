@@ -156,7 +156,7 @@ def get_values():
 def post_values():
     json = request.get_json()
     if Values.exists(json[0][0], json[0][1]):
-        abort(204, "File already imported")
+        return "File already imported", 204
     Values.add(json)
 
     return "Success"
