@@ -425,6 +425,16 @@ class Buildings:
     def all_floors():
         return query_json_single_column("SELECT DISTINCT floor AS col FROM rooms ORDER BY floor")
 
+    @staticmethod
+    def floors_where(where_clause):
+        """Returns a list of all distinct floors that any room which matches has."""
+        return query_json_single_column("""
+        SELECT DISTINCT floor AS col 
+        FROM rooms 
+            LEFT JOIN buildings ON rooms.building_id = buildings.building_id 
+            LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
+        WHERE %s ORDER BY floor""" % where_clause)
+
 
 class Tags:
     sql_query = """

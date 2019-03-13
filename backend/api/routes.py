@@ -92,6 +92,16 @@ def get_all_floors():
     return Buildings.all_floors() or "[]"
 
 
+@api.route('/floors', methods=['GET', 'POST'])
+def get_floors():
+    if request.values.get('search'):
+        try:
+            return Buildings.floors_where(Search.buildings(request.values.get('search'))) or "[]"
+        except InvalidSearchException as e:
+            abort(400, e)
+    return Buildings.all_floors() or "[]"
+
+
 @api.route('/tags')
 def get_all_tags():
     return Tags.all() or "[]"
