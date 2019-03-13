@@ -3,7 +3,6 @@ from flask import Flask
 from backend.api.routes import api
 from backend.upload.routes import upload
 from flask_cors import CORS
-import os
 
 application = Flask(__name__)
 

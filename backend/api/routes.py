@@ -7,11 +7,14 @@ import datetime as dt
 api = Blueprint('api', __name__)
 
 
+# POST needs to be an option because with a sufficiently complex search query, the query string will
+# exceed the max allowable length of an URL
 @api.route('/points', methods=['GET', 'POST'])
 def get_points():
-    if request.values.get('search'):
+    search_query = request.values.get('search')
+    if search_query:
         try:
-            return Points.where(Search.points(request.values.get('search'))) or "[]"
+            return Points.where(Search.points(search_query)) or "[]"
         except InvalidSearchException as e:
             abort(400, e)
     else:
@@ -20,11 +23,12 @@ def get_points():
 
 @api.route('/points/ids', methods=['GET', 'POST'])
 def get_points_ids():
-    if not request.values.get('search'):
-        abort(400, "Must include search paramter")
+    search_query = request.values.get('search')
+    if not search_query:
+        abort(400, "Must include search parameter")
 
     try:
-        return jsonify(Points.ids_where(Search.points(request.values.get('search')))) or "[]"
+        return jsonify(Points.ids_where(Search.points(search_query))) or "[]"
     except InvalidSearchException as e:
         abort(400, e)
 
@@ -36,9 +40,10 @@ def get_point_by_id(id):
 
 @api.route('/devices', methods=['GET', 'POST'])
 def get_devices():
-    if request.values.get('search'):
+    search_query = request.values.get('search')
+    if search_query:
         try:
-            return Devices.where(Search.devices(request.values.get('search'))) or "[]"
+            return Devices.where(Search.devices(search_query)) or "[]"
         except InvalidSearchException as e:
             abort(400, e)
     else:
@@ -52,9 +57,10 @@ def get_device_by_id(id):
 
 @api.route('/rooms', methods=['GET', 'POST'])
 def get_rooms():
-    if request.values.get('search'):
+    search_query = request.values.get('search')
+    if search_query:
         try:
-            return Rooms.where(Search.rooms(request.values.get('search'))) or "[]"
+            return Rooms.where(Search.rooms(search_query)) or "[]"
         except InvalidSearchException as e:
             abort(400, e)
     else:
@@ -68,9 +74,10 @@ def get_room(id):
 
 @api.route('/buildings', methods=['GET', 'POST'])
 def get_buildings():
-    if request.values.get('search'):
+    search_query = request.values.get('search')
+    if search_query:
         try:
-            return Buildings.where(Search.buildings(request.values.get('search'))) or "[]"
+            return Buildings.where(Search.buildings(search_query)) or "[]"
         except InvalidSearchException as e:
             abort(400, e)
     else:
@@ -94,9 +101,10 @@ def get_all_floors():
 
 @api.route('/floors', methods=['GET', 'POST'])
 def get_floors():
-    if request.values.get('search'):
+    search_query = request.values.get('search')
+    if search_query:
         try:
-            return Buildings.floors_where(Search.buildings(request.values.get('search'))) or "[]"
+            return Buildings.floors_where(Search.buildings(search_query)) or "[]"
         except InvalidSearchException as e:
             abort(400, e)
     return Buildings.all_floors() or "[]"
@@ -149,15 +157,16 @@ def get_type_by_id(id):
 
 @api.route('/values', methods=['GET', 'POST'])
 def get_values():
+    # Some clients put `[]` at the end of array parameters. We can handle either case.
     point_ids = request.values.getlist('point_ids') or request.values.getlist('point_ids[]')
     start_time = request.values.get('start_time')
     end_time = request.values.get('end_time')
-
     search = request.values.get('search')
 
+    if None in (point_ids, start_time, end_time, search):
+        abort(400, "Missing required parameter")
+
     search_sql = Search.values(search)
-    print("search", search)
-    print("sql", search_sql)
 
     return Values.get(tuple(point_ids), start_time, end_time, search_sql) or "[]"
 
@@ -166,6 +175,8 @@ def get_values():
 def post_values():
     json = request.get_json()
     if Values.exists(json[0][0], json[0][1]):
+        # 204 isn't an error, it's just acknowledgement that this batch of values has already been
+        # added, and no action was taken.
         return "File already imported", 204
     Values.add(json)
 
@@ -174,24 +185,25 @@ def post_values():
 
 @api.route('/points/verify', methods=['GET', 'POST'])
 def search_verify():
-    if request.values.get("search") is None:
+    search_query = request.values.get('search')
+    if not search_query:
         abort(400, "Request must include a `search` argument")
     try:
-        return Points.counts_where(Search.points(request.values.get("search"))) or "[]"
+        return Points.counts_where(Search.points(search_query)) or "[]"
     except psycopg2.Error as e:  # Any InvalidSearchException will be thrown and result in a 500.
         return "Invalid Point Search: " + str(e.pgerror)
 
 
 @api.route('/values/verify', methods=['GET', 'POST'])
 def values_verify():
-    if request.values.get("search") is None:
-        abort(400, "Request must include a `search` argument")
     try:
         point_ids = request.values.getlist('point_ids') or request.values.getlist('point_ids[]')
         start_time = request.values.get('start_time')
         end_time = request.values.get('end_time')
-
         search = request.values.get('search')
+
+        if None in (point_ids, start_time, end_time, search):
+            abort(400, "Missing required parameter")
         search_sql = Search.values(search)
 
         return "%s values found" % Values.get_count(tuple(point_ids), start_time, end_time,
@@ -221,6 +233,15 @@ def trycast_int(obj):
 
 @api.route('/rule/<id>/count')
 def get_rule_count(id):
+    """ This route can operate in 3 ways. With no parameters, it looks at yesterday (from the
+        second most recent midnight till the most recent midnight). With a `since` parameter, it uses
+        the range from `since` until now. With `start_time` and `end_time`, it uses that range.
+
+        It also checks if there are any values at all since the start time, and if there are none,
+        this likely means that there's some problem with the Value Pipeline, and today's values
+        haven't been imported yet. To just report 0 would be a false negative, so we throw a 404
+        instead, so the client knows that there was a failure.
+    """
     since = trycast_int(request.values.get("since"))
     start_time = trycast_int(request.values.get("start_time"))
     end_time = trycast_int(request.values.get("end_time"))
@@ -232,7 +253,7 @@ def get_rule_count(id):
         end = end_time
     else:
         end = int(dt.datetime.combine(dt.date.today(), dt.time()).timestamp())
-        start = end - 60*60*24
+        start = end - 60 * 60 * 24
 
     if not Values.has_any_since(start):
         abort(404, "No values since start time %s" % start)
@@ -245,6 +266,15 @@ def get_rule_count(id):
 
 @api.route('/rule/<id>/matches')
 def get_rule_matches(id):
+    """ This route can operate in 3 ways. With no parameters, it looks at yesterday (from the
+        second most recent midnight till the most recent midnight). With a `since` parameter, it uses
+        the range from `since` until now. With `start_time` and `end_time`, it uses that range.
+
+        It also checks if there are any values at all since the start time, and if there are none,
+        this likely means that there's some problem with the Value Pipeline, and today's values
+        haven't been imported yet. To just report 0 would be a false negative, so we throw a 404
+        instead, so the client knows that there was a failure.
+    """
     since = trycast_int(request.values.get("since"))
     start_time = trycast_int(request.values.get("start_time"))
     end_time = trycast_int(request.values.get("end_time"))
@@ -256,7 +286,7 @@ def get_rule_matches(id):
         end = end_time
     else:
         end = int(dt.datetime.combine(dt.date.today(), dt.time()).timestamp())
-        start = end - 60*60*24
+        start = end - 60 * 60 * 24
 
     if not Values.has_any_since(start):
         abort(404, "No values since start time %s" % start)
@@ -274,13 +304,13 @@ def post_rule_add():
     point_search = request.values.get("point_search")
     value_search = request.values.get("value_search")
     if None in (name, url, point_search, value_search):
-        abort(400)
+        abort(400, "Missing required parameter")
     Rules.add(name, url, point_search, value_search)
     return "Success"
 
 
 @api.route('/rule/<id>/delete', methods=['POST'])
-def post_rule_remove(id):
+def post_rule_delete(id):
     Rules.delete(id)
     return "Success"
 
@@ -288,6 +318,6 @@ def post_rule_remove(id):
 @api.route('/rule/<id>/rename', methods=['POST'])
 def post_rule_rename(id):
     name = request.values.get("name")
-    if name is None:
-        abort(400)
+    if not name:
+        abort(400, "Missing name parameter")
     return Rules.rename(id, name)

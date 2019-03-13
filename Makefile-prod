@@ -1,25 +1,32 @@
 .PHONY: run debug schema seed drop reseed deploy logs
 
-run:
-	DATABASE_HOST=localhost DATABASE_NAME=energy DATABASE_USER=energy DATABASE_PASSWORD="[REDACTED]" pipenv run gunicorn --bind energycomps.its.carleton.edu:8080 --log-file /home/energy/logs/gunicorn.log app
-
-debug:
-	FLASK_DEBUG=1 DATABASE_HOST=localhost DATABASE_NAME=energy DATABASE_USER=energy DATABASE_PASSWORD="[REDACTED]" pipenv run gunicorn --bind energycomps.its.carleton.edu:8080 --log-file /home/energy/logs/gunicorn.log app
-
-schema:
-	PGPASSWORD="[REDACTED]" /usr/pgsql-10/bin/psql -h localhost -d energy -U energy -f ./migrations/schema.sql
-
-seed:
-	PGPASSWORD="[REDACTED]" /usr/pgsql-10/bin/psql -h localhost -d energy -U energy -f ./migrations/seed.sql
-
-drop:
-	PGPASSWORD="[REDACTED]" /usr/pgsql-10/bin/psql -h localhost -d energy -U energy -f ./migrations/drop.sql
-
-reseed: drop schema seed
-
-deploy: 
+deploy:
 	git pull
 	sudo systemctl restart backend
 
 logs:
 	sudo journalctl -u backend
+
+export PGPASSWORD=[REDACTED]
+export DATABASE_PASSWORD=[REDACTED]
+export DATABASE_HOST=localhost
+export DATABASE_NAME=energy
+export DATABASE_USER=energy
+
+# This command is for testing only, not real deployment.
+run:
+	pipenv run gunicorn --bind energycomps.its.carleton.edu:8080 app
+
+debug:
+	FLASK_DEBUG=1 pipenv run gunicorn --bind energycomps.its.carleton.edu:8080 app
+
+schema:
+	/usr/pgsql-10/bin/psql -h localhost -d energy -U energy -f ./migrations/schema.sql
+
+seed:
+	/usr/pgsql-10/bin/psql -h localhost -d energy -U energy -f ./migrations/seed.sql
+
+drop:
+	/usr/pgsql-10/bin/psql -h localhost -d energy -U energy -f ./migrations/drop.sql
+
+reseed: drop schema seed
