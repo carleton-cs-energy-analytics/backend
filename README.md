@@ -10,6 +10,46 @@
 
    To run the server in debug mode, run `FLASK_DEBUG=1 pipenv run python3 app.py`
 
+## Deployment
+
+### Server configuration
+
+Our server is `energycomps.its.carleton.edu`.
+There is a UNIX user called `energy`, and a group called `energycomps`. Most of the relevant files
+should be owned by `energy` have the group be `energycomps`. All members of the comps team are
+members of `energycomps`. It's impossible to log in as `energy`, so only Sudoers can act as
+`energy`. 
+
+The backend repository is deployed at `/var/www/backend`. 
+There is a systemd unit file at `/etc/systemd/system/backend.service`, which should have the following contents:
+
+    [Unit]
+    Description=Gunicorn instance to serve backend
+    After=network.target
+    
+    [Service]
+    User=energy
+    Group=energycomps
+    WorkingDirectory=/var/www/backend
+    ExecStart=/usr/bin/make run
+    
+    [Install]
+    WantedBy=multi-user.target
+
+There is a file in this repository called `Makefile-prod`. On the production server, there is a file called `Makefile`.
+`Makefile` is a copy of `Makefile-prod`, with `[REDACTED]` replaced with the PostgreSQL password. The intention is that
+the server Makefile, and thus the password, is not included in the repository.
+
+To re-deploy the latest version, there's a Make rule which simply does a `git pull`, and then restarts the systemd unit.
+
+### Reverse Proxy
+
+The server is configured with an NGINX (pronounced engine-x) reverse proxy to expose both the frontend and backend at
+the same time on the same port. The NGINX configuration file resides at `/etc/nginx/nginx.conf`.
+
+TODO: It would be good for performance if static assets were served directly with NGINX, rather than via gunicorn. 
+I tried doing it by creating a location at `/static`, and setting its root, but that didn't seem to work.
+
 ## Running for production
 
 1) Login as the user "energy"

@@ -13,9 +13,9 @@ export DATABASE_HOST=localhost
 export DATABASE_NAME=energy
 export DATABASE_USER=energy
 
-# This command is for testing only, not real deployment.
+# This rule is only intended to be used by the systemd unit.
 run:
-	pipenv run gunicorn --bind energycomps.its.carleton.edu:8080 app
+	/usr/bin/pipenv run gunicorn --workers 3 --bind unix:backend.sock app
 
 debug:
 	FLASK_DEBUG=1 pipenv run gunicorn --bind energycomps.its.carleton.edu:8080 app
