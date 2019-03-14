@@ -5,7 +5,8 @@ import psycopg2
 CONN = psycopg2.connect(host=os.environ.get('DATABASE_HOST') or '',
                         dbname=os.environ.get('DATABASE_NAME') or 'energy-dev',
                         user=os.environ.get('DATABASE_USER') or '',
-                        password=os.environ.get('DATABASE_PASSWORD') or '')
+                        password=os.environ.get('DATABASE_PASSWORD') or
+                                 os.environ.get('PGPASSWORD') or '')
 CONN.autocommit = True
 
 
@@ -220,7 +221,9 @@ class Points:
 
     @staticmethod
     def counts_where(where_clause):
-        """Returns a list of the ids of all Points which match the given WHERE-clause."""
+        """Returns a list of each value_type's id, and the number of points of that type which match
+        the given WHERE-clause.
+        """
         base_query = """
             SELECT points.value_type_id, COUNT(DISTINCT points.point_id)
             FROM points
@@ -417,12 +420,14 @@ class Buildings:
 
     @staticmethod
     def floors(building_id):
+        """Returns a list of all distinct floors that rooms in this building have."""
         return query_json_single_column(
             "SELECT DISTINCT floor AS col FROM rooms WHERE building_id = %s ORDER BY floor",
             building_id)
 
     @staticmethod
     def all_floors():
+        """Returns a list of all distinct floors that any room (in any building) has."""
         return query_json_single_column("SELECT DISTINCT floor AS col FROM rooms ORDER BY floor")
 
     @staticmethod
@@ -487,6 +492,7 @@ class Units:
 
     @staticmethod
     def get_all_measurements():
+        """Returns a list of all distinct measurements of any unit"""
         return query_json_single_column("SELECT DISTINCT measurement AS col FROM value_units")
 
 
@@ -668,7 +674,7 @@ class Values:
 
     @staticmethod
     def get_count(point_ids, start_time, end_time, where_clause='TRUE'):
-        """Returns JSON-encoded array of values which match the given parameters.
+        """Returns the number of values which match the given parameters.
 
         :param point_ids: A list of the IDs of the points whose values should be included
         :param start_time: The UNIX Epoch time which marks the beginning of the range to be
@@ -692,10 +698,14 @@ class Values:
 
     @staticmethod
     def has_any_since(time):
+        """Returns truthiness if there are any values in the DB where the timestamp is greater than
+        or equal to that given
+        """
         return query_single_cell("SELECT exists(SELECT 1 FROM values WHERE timestamp>=%s)", (time,))
 
     @staticmethod
     def most_recent_timestamp():
+        """Returns the greatest timestamp in the values table"""
         return query_single_cell("SELECT max(timestamp) FROM values")
 
 
@@ -715,6 +725,9 @@ class Rules:
 
     @staticmethod
     def searches(id):
+        """Returns a tuple containing the point search and the value search for the rule with the
+        given id
+        """
         return query_single_row("SELECT point_search, value_search FROM rules "
                                 "WHERE rule_id = %s", (id,))
 
