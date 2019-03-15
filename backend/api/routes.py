@@ -163,7 +163,7 @@ def get_values():
     end_time = request.values.get('end_time')
     search = request.values.get('search')
 
-    if None in (point_ids, start_time, end_time, search):
+    if None in (point_ids, start_time, end_time):
         abort(400, "Missing required parameter")
 
     search_sql = Search.values(search)
