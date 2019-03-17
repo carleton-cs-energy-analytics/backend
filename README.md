@@ -1,5 +1,15 @@
 # backend
 
+Contains the Database, API, and Search functionality. 
+
+NOTE: The tests are currently failing, but that's just because our tests are bad. The tests 
+currently check if a JSON response is equal to a string. They should really be parsing the response
+and comparing it as a python object so that things like order which don't matter in practice also
+don't matter in the tests. Currently the order of results is different than it once was, so the
+tests now fail. We left them in this failing state as an incentive to whoever comes along next to
+make the tests check JSON equality properly, and totally not because we didn't feel like doing it
+ourselves. 
+
 ## Running for development
 
 1) Run `./reseed.sh`
@@ -40,7 +50,8 @@ There is a file in this repository called `Makefile-prod`. On the production ser
 `Makefile` is a copy of `Makefile-prod`, with `[REDACTED]` replaced with the PostgreSQL password. The intention is that
 the server Makefile, and thus the password, is not included in the repository.
 
-To re-deploy the latest version, there's a Make rule which simply does a `git pull`, and then restarts the systemd unit.
+To re-deploy the latest version, there's a Make rule (`deploy`) which simply does a `git pull`, 
+and then restarts the systemd unit.
 
 ### Reverse Proxy
 
