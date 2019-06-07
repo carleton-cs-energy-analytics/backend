@@ -202,8 +202,8 @@ def values_verify():
         end_time = request.values.get('end_time')
         search = request.values.get('search')
 
-        if None in (point_ids, start_time, end_time, search):
-            abort(400, "Missing required parameter")
+        if search is None:
+            abort(400, "Request must include a `search` argument")
         search_sql = Search.values(search)
 
         return "%s values found" % Values.get_count(tuple(point_ids), start_time, end_time,
