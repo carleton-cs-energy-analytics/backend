@@ -1,3 +1,6 @@
+# Energy Comps Database
+Welcome to the ENergy Comps Database! To view the database schema and documentation on each table, see *schema.sql*. To learn more about how to query the database, see below.
+
 # Useful Database Queries
 This document gives some useful examples of queries to the Energy Database. This is a great place to start if first looking at the database or you're trying to get lots of information and would like an initial idea for how to structure your search query.
 
