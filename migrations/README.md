@@ -1,6 +1,8 @@
 # Energy Comps Database
 Welcome to the Energy Comps Database! To view the database schema and documentation on each table, see *schema.sql*. To learn more about how to query the database, see below.
 
+More information on how the database works (backend files and documentation) can be found in the backend/backend/database folder in this repository.
+
 # Useful Database Queries
 This document contains some useful examples of SQL queries to the Energy Database. This is a great place to start if first looking at the database or you're looking for initial ideas on how to structure your search query.
 
