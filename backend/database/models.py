@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import psycopg2
 
 CONN = psycopg2.connect(host=os.environ.get('DATABASE_HOST') or '',
@@ -183,6 +184,47 @@ class Points:
     def all():
         """Returns a JSON-encoded array of all Points."""
         return query_json_array(Points.sql_query % "TRUE")
+
+    @staticmethod
+    def generate_points_dict():
+        queried_dict = json.loads(query_json_array("""
+                                SELECT 
+                                points.point_id,
+                                value_units.value_unit_id,
+                                points.name AS point_name,
+                                buildings.name AS building_name,
+                                rooms.name AS room_name
+                                FROM points
+                                    LEFT JOIN devices ON points.device_id = devices.device_id
+                                    LEFT JOIN rooms ON devices.room_id = rooms.room_id
+                                    LEFT JOIN buildings ON rooms.building_id = buildings.building_id
+                                    LEFT JOIN value_units ON points.value_unit_id = value_units.value_unit_id
+                                    LEFT JOIN points_tags ON points.point_id = points_tags.point_id
+                                    LEFT JOIN devices_tags ON devices.device_id = devices_tags.device_id
+                                    LEFT JOIN rooms_tags ON rooms.room_id = rooms_tags.room_id
+                                    LEFT JOIN buildings_tags ON buildings.building_id = buildings_tags.building_id
+                                WHERE (value_units.value_unit_id = 1 
+                                OR value_units.value_unit_id = 2) 
+                                AND rooms.name NOT LIKE 'UnID%'
+                                AND (points.name LIKE '%ROOM TEMP'
+                                OR points.name LIKE '%DMPR POS')
+                                """
+                                ))
+        points_dict = {}
+        for point in queried_dict:
+            if queried_dict['value_unit_id'] == '1':
+                value_unit = 'Temperature'
+            else:
+                value_unit = 'Damper'
+            info_dict = {
+                 'Point Name' : queried_dict['point_name'],
+                 'Building Name' : queried_dict['building_name'],
+                 'Room Name' : queried_dict['room_name'],
+                 'Value Unit' : value_unit,
+                 'Values' : []
+            }
+            points_dict[queried_dict['point_id']] = info_dict
+        return points_dict
 
     @staticmethod
     def get_by_id(id):
@@ -671,6 +713,16 @@ class Values:
             tuple(point_ids), start_time, end_time,
             tuple(point_ids), start_time, end_time,
         ))
+
+    @staticmethod
+    def get_all_point_values(start_time, end_time):
+        points_dict = Points.generate_points_dict()
+        for point_id in points_dict:
+            values = json.loads(Values.get(point_id, start_time, end_time, where_clause ='TRUE'))
+            for value in values:
+                data_point = {'Value' : value['value'], 'Timestamp' : value['timestamp']}
+                points_dict['Values'].append(data_point)
+        return json.dumps(points_dict)
 
     @staticmethod
     def get_count(point_ids, start_time, end_time, where_clause='TRUE'):

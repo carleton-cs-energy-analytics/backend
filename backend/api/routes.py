@@ -170,6 +170,14 @@ def get_values():
 
     return Values.get(tuple(point_ids), start_time, end_time, search_sql) or "[]"
 
+@api.route('/recent', methods=['GET', 'POST'])
+def get_recent_values():
+    start_time = request.values.get('start_time')
+    end_time = request.values.get('end_time')
+    if None in (start_time, end_time):
+        abort(400, "Missing required parameter")
+    return Values.get_all_point_values(start_time, end_time) or "[]"
+
 
 @api.route('/values/add', methods=['POST'])
 def post_values():
