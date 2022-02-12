@@ -175,8 +175,8 @@ def get_values():
 def get_anomalous_vent_temp_values():
     start_time = request.values.get('start_time')
     end_time = request.values.get('end_time')
-    vent = request.values.get('vent')
     temp = request.values.get('temp')
+    vent = request.values.get('vent')
 
     if None in (start_time, end_time, vent, temp):
         abort(400, "Missing required parameter")
@@ -196,9 +196,9 @@ def get_anomalous_vent_temp_values():
                 }
             }
         else:
-            values_by_room['values']['temp'].append(value['temp'])
-            values_by_room['values']['vent'].append(value['vent'])
-            values_by_room['values']['timestamp'].append(value['time'])
+            values_by_room[room]['values']['temp'].append(value['temp'])
+            values_by_room[room]['values']['vent'].append(value['vent'])
+            values_by_room[room]['values']['timestamp'].append(value['time'])
 
     return jsonify(values_by_room)
 
