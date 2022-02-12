@@ -676,7 +676,7 @@ class Values:
     @staticmethod
     def temp_vent_anomolies(start_time, end_time, temp, vent):
         return query_json_array("""
-            with temp as 
+            WITH temp as 
             (SELECT DISTINCT points.name as temp_name, values.timestamp as time, values.double as temp, rooms.name as room, buildings.name as building
             FROM points, values, tags, points_tags, rooms, devices, buildings
             WHERE points.point_id = points_tags.point_id
@@ -705,7 +705,7 @@ class Values:
             FROM temp INNER JOIN damper ON temp.time=damper.time 
                                         AND temp.room=damper.room
             )
-            select * from joined;
+            SELECT * FROM joined
             """, (
             start_time, end_time, temp,
             start_time, end_time, vent
