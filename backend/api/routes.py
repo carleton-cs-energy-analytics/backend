@@ -3,6 +3,7 @@ from backend.database.models import *
 from backend.database.Search import Search
 from backend.database.exceptions import *
 import datetime as dt
+import json
 
 api = Blueprint('api', __name__)
 
@@ -171,7 +172,7 @@ def get_values():
     return Values.get(tuple(point_ids), start_time, end_time, search_sql) or "[]"
 
 @api.route('/anomalies/vent-and-temp', methods=['GET', 'POST'])
-def get_anomalous_values():
+def get_anomalous_vent_temp_values():
     start_time = request.values.get('start_time')
     end_time = request.values.get('end_time')
     vent = request.values.get('vent')
@@ -179,8 +180,27 @@ def get_anomalous_values():
 
     if None in (start_time, end_time, vent, temp):
         abort(400, "Missing required parameter")
-    
-    return Values.temp_vent_anomolies(start_time, end_time, temp, vent)
+
+    values_by_room = {}
+    raw_values = json.loads(Values.temp_vent_anomolies(start_time, end_time, temp, vent))
+    for value in raw_values:
+        room = value['building'] + ' ' + value['room']
+        if room not in values_by_room:
+            values_by_room[room] = {
+                'temp_name' : value['temp_name'],
+                'damper_name' : value['damper_name'],
+                'values' : {
+                    'temp' : [value['temp']],
+                    'vent' : [value['vent']],
+                    'timestamp' : [value['time']]
+                }
+            }
+        else:
+            values_by_room['values']['temp'].append('')
+            values_by_room['values']['vent'].append('')
+            values_by_room['values']['timestamp'].append('')
+
+    return jsonify(values_by_room)
 
 
 @api.route('/values/add', methods=['POST'])
