@@ -196,9 +196,9 @@ def get_anomalous_vent_temp_values():
                 }
             }
         else:
-            values_by_room['values']['temp'].append('')
-            values_by_room['values']['vent'].append('')
-            values_by_room['values']['timestamp'].append('')
+            values_by_room['values']['temp'].append(value['temp'])
+            values_by_room['values']['vent'].append(value['vent'])
+            values_by_room['values']['timestamp'].append(value['time'])
 
     return jsonify(values_by_room)
 
