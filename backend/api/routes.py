@@ -181,9 +181,13 @@ def get_anomalous_vent_temp_values():
     if None in (start_time, end_time, vent, temp):
         abort(400, "Missing required parameter")
 
+    raw_values = Values.temp_vent_anomolies(start_time, end_time, temp, vent)
+    if raw_values is None:
+        return "[]"
+    loaded_values = json.loads(raw_values)
+
     values_by_room = {}
-    raw_values = json.loads(Values.temp_vent_anomolies(start_time, end_time, temp, vent))
-    for value in raw_values:
+    for value in loaded_values:
         room = value['building'] + ' ' + value['room']
         if room not in values_by_room:
             values_by_room[room] = {
