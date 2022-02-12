@@ -171,7 +171,7 @@ def get_values():
     return Values.get(tuple(point_ids), start_time, end_time, search_sql) or "[]"
 
 @api.route('/anomalies/vent-and-temp', methods=['GET', 'POST'])
-def get_recent_values():
+def get_anomalous_values():
     start_time = request.values.get('start_time')
     end_time = request.values.get('end_time')
     vent = request.values.get('vent')
@@ -180,7 +180,7 @@ def get_recent_values():
     if None in (start_time, end_time, vent, temp):
         abort(400, "Missing required parameter")
     
-    return Values.temp_vent_anomolies(start_time, end_time, vent, temp)
+    return Values.temp_vent_anomolies(start_time, end_time, temp, vent)
 
 
 @api.route('/values/add', methods=['POST'])
