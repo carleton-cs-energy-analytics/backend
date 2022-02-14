@@ -684,6 +684,7 @@ class Values:
                 AND devices.room_id = rooms.room_id
                 AND rooms.building_id = buildings.building_id
                 AND points_tags.tag_id = 3
+                AND tags.tag_id = 3
                 AND points.point_id = values.point_id
                 AND values.timestamp > %s
                 AND values.timestamp < %s
@@ -696,6 +697,7 @@ class Values:
                 AND devices.room_id = rooms.room_id
                 AND rooms.building_id = buildings.building_id
                 AND points_tags.tag_id = 2
+                AND tags.tag_id = 2
                 AND points.point_id = values.point_id
                 AND values.timestamp > %s
                 AND values.timestamp < %s
